@@ -107,7 +107,7 @@ html, html[data-theme="light"]{
 }
 
 html[data-theme="dark"] {
-	--var-bg-color: #191919;
+	--var-bg-color: #110459;
 	--var-color: #fff;
 	--var-color-dim: rgba(255,255,255,.5);
 	--var-color-dim-hover: rgba(255,255,255,.7);
@@ -117,7 +117,7 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
 	html, html[data-theme="dark"] {
-		--var-bg-color: #191919;
+		--var-bg-color: #110459;
 		--var-color: #fff;
 		--var-color-dim: rgba(255,255,255,.5);
 		--var-color-dim-hover: rgba(255,255,255,.7);
