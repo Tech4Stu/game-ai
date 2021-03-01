@@ -9,7 +9,7 @@ def text_on_button(surface, txt, rect, font, color=(255, 255, 255)):
 class Label:
     # a Rect being drawn
     def __init__(self, surface, pos, txt, bg_clr=(0,0,0), txt_clr=(255,255,255), border=None, border_clr=(255,255,255),
-               font="arial", font_size=36, width=None, height=None, side="left", picture=None):
+               font="arial", font_size=36, width=None, height=None, side="left", picture=None, transparant=False):
         self.surface    = surface
         self.pos        = pos
         self.txt        = txt
@@ -22,6 +22,7 @@ class Label:
         self.height     = height
         self.side       = side
         self.picture    = picture
+        self.transparant= transparant
 
         if not self.width:
             self.width  = self.font.size(self.txt)[0]
@@ -38,7 +39,8 @@ class Label:
             surf = self.surface
         if pos == None:
             pos = self.pos
-        pygame.draw.rect(surf, self.bg_clr, (pos[0], pos[1], self.rect.width, self.rect.height))
+        if not self.transparant:
+            pygame.draw.rect(surf, self.bg_clr, (pos[0], pos[1], self.rect.width, self.rect.height))
         if self.border:
             pygame.draw.rect(surf, self.border_clr, (pos[0], pos[1], self.rect.width, self.rect.height), 2)
         if not self.picture:
@@ -57,7 +59,7 @@ class Label:
 class Button:
     # a Rect being drawn
     def __init__(self, surface, pos, txt, bg_clr=(0,0,0), txt_clr=(255, 255, 255), border_clr=(50,50,50), select_clr=(255,255,255),
-                 font="arial", font_size=36, width=None, height=None, picture=None, side="left"):
+                 font="arial", font_size=36, width=None, height=None, picture=None, side="left", transparant=False):
         self.surface                = surface
         self.pos                    = pos
         self.txt                    = txt
@@ -71,6 +73,7 @@ class Button:
         self.height                 = height
         self.picture                = picture # wordt later omgezet naar 16x16
         self.side                   = side
+        self.transparant            = transparant
 
         if self.width == None:
             self.width = self.font.size(self.txt)[0] + 10
@@ -86,7 +89,8 @@ class Button:
         self.border_clr = self.original_border_clr
         if self.rect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]):
             self.border_clr = self.select_clr
-        pygame.draw.rect(self.surface, self.bg_clr, self.rect)
+        if not self.transparant:
+            pygame.draw.rect(self.surface, self.bg_clr, self.rect)
         pygame.draw.rect(self.surface, self.border_clr, self.rect, 2)
         if not self.picture:
             text_on_button(self.surface, self.txt, self.rect, self.font, self.txt_clr)
