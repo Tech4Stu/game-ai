@@ -10,9 +10,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="26.458334mm"
-   height="26.458334mm"
-   viewBox="0 0 26.458334 26.458334"
+   width="15.875mm"
+   height="15.875mm"
+   viewBox="0 0 15.875 15.875"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -44,8 +44,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="-117.42997"
-     inkscape:cy="-49.005806"
+     inkscape:cx="-207.33355"
+     inkscape:cy="-66.178399"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -74,16 +74,16 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-0.13363457,-0.0649147)">
+     transform="translate(-0.13363552,-6.1046667)">
     <circle
-       style="fill:#380060;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1"
+       style="fill:#380060;fill-opacity:1;stroke:none;stroke-width:0.15875;stroke-opacity:1"
        id="path836"
-       cx="13.362802"
-       cy="13.294082"
-       r="13.229167" />
+       cx="8.0711355"
+       cy="14.042167"
+       r="7.9375" />
     <g
        id="g836"
-       transform="translate(-49.759758,-220.3276)">
+       transform="matrix(0.60000001,0,0,0.60000001,-29.802401,-126.13084)">
       <ellipse
          ry="10.583333"
          rx="10.5835"

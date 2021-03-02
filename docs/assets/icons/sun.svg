@@ -10,9 +10,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="26.458334mm"
-   height="26.458334mm"
-   viewBox="0 0 26.458334 26.458334"
+   width="15.875mm"
+   height="15.875mm"
+   viewBox="0 0 15.875 15.875"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -59,7 +59,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="226.78795"
+     inkscape:cx="99.645093"
      inkscape:cy="-29.153962"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -89,19 +89,19 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-0.10714245,-0.18154144)">
+     transform="translate(-0.10714245,-10.764875)">
     <circle
-       style="fill:#9bdcff;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1"
+       style="fill:#9bdcff;fill-opacity:1;stroke:none;stroke-width:0.15874998;stroke-opacity:1"
        id="path836"
-       cx="13.336309"
-       cy="13.410708"
-       r="13.229167" />
+       cx="8.0446424"
+       cy="18.702375"
+       r="7.9375" />
     <ellipse
-       style="fill:#ffc839;fill-opacity:1;stroke:#ef9a00;stroke-width:2.36500001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.26339291"
+       style="fill:#ffc839;fill-opacity:1;stroke:#ef9a00;stroke-width:1.41899991;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.26339291"
        id="path858"
-       cx="13.336309"
-       cy="13.410708"
-       rx="10.5835"
-       ry="10.583333" />
+       cx="8.0446424"
+       cy="18.702375"
+       rx="6.3500996"
+       ry="6.3499994" />
   </g>
 </svg>
