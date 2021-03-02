@@ -14,6 +14,20 @@ clock = pygame.time.Clock()
 
 #map maken in lijst terrein
 
+#misc functies
+def rot_center(image, angle, x, y):
+    '''
+    zal een gegeven foto draaien rond center op pos (x,y)
+    :param image: foto
+    :param angle: hoek om te draaien, pos is tegenwijzerzin
+    :param x: x positie
+    :param y: y positie
+    :return: gedraaide foto, rect waarin foto zich bevindt(kan worden gebruikt om te blitten op scherm)
+    '''
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
+    return rotated_image, new_rect
+
 #game loop
 def game_loop():
     '''
@@ -80,22 +94,22 @@ WINDOW_SIZE = (window_info.current_w, window_info.current_h) #hoogte/breedte toe
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)  # kiezen waar scherm wordt gezet
 screen = pygame.display.set_mode((WINDOW_SIZE[0], WINDOW_SIZE[1]), 0, 32) #screen is scherm waar alles op zal worden getekend
 #foto's
-logo_img = pygame.image.load("T4S_logo.png").convert()
+logo_img = pygame.image.load("images\T4S_logo.png").convert()
 logo_img.set_colorkey((255,255,255))
+logo_img = pygame.transform.scale(logo_img, (100,100))
+titel_img = pygame.image.load("images\\titel.png").convert()
+titel_img.set_colorkey((0,0,0))
+titel_img = pygame.transform.scale(titel_img, (1118, 194))
 #knoppen
-#play_button = engine.Button(screen, (50, WINDOW_SIZE[1]-250), "PLAY", font_size=120)
-#upgrade_button = engine.Button(screen, (100+play_button.width, WINDOW_SIZE[1]-250), "UPGRADES", font_size=120)
-#settings_button = engine.Button(screen, (150+play_button.width+upgrade_button.width, WINDOW_SIZE[1]-250), "SETTINGS", font_size=120)
-
 play_button = engine.Button(screen, (50, WINDOW_SIZE[1]-250), "PLAY", font_size=120, transparant=True)
 upgrade_button = engine.Button(screen, (play_button.pos[0]+play_button.width+50, WINDOW_SIZE[1]-250), "UPGRADES", font_size=120, transparant=True)
 settings_button = engine.Button(screen, (upgrade_button.pos[0]+upgrade_button.width+50, WINDOW_SIZE[1]-250), "SETTINGS", font_size=120, transparant=True)
-titel_label = engine.Label(screen, (200, 150), "NAAM", font_size=240, transparant=True)
-AI_label = engine.Label(screen, (800, 350), "(AI)", font_size=140, transparant=True)
-
+#parameters
+hoek = 0 #hoek waarrond titel wordt gedraaid
+sign = 0.25 #dhoek/dt
 run = True
 while run:
-    screen.fill((100,100,150))
+    screen.fill((69,69,69))
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -111,9 +125,11 @@ while run:
     play_button.draw()
     upgrade_button.draw()
     settings_button.draw()
-    titel_label.draw()
-    AI_label.draw()
-    screen.blit(pygame.transform.scale(logo_img, (100,100)), (WINDOW_SIZE[0]-110, WINDOW_SIZE[1]-110-30))
-
+    rotated_titel = rot_center(titel_img, hoek, WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 - 200)
+    screen.blit(rotated_titel[0], rotated_titel[1])
+    screen.blit(logo_img, (WINDOW_SIZE[0]-110, WINDOW_SIZE[1]-110-30))
+    hoek += sign
+    if hoek >= 15 or hoek <= 0:
+        sign *= -1
     clock.tick(60)
     pygame.display.update()
