@@ -1,3 +1,8 @@
+/*Remove dropshadow from navbar-toggler*/
+.navbar-toggler:focus{
+	box-shadow: none;
+}
+
 /*Floating button*/
 .float{
 	position:fixed;
