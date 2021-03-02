@@ -16,7 +16,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="Sun.svg">
+   sodipodi:docname="sun.svg">
   <defs
      id="defs2">
     <marker
@@ -57,9 +57,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="262.2157"
-     inkscape:cy="203.74913"
+     inkscape:zoom="1.4"
+     inkscape:cx="354.33575"
+     inkscape:cy="992.67958"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -76,7 +76,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -87,14 +87,14 @@
     <circle
        style="fill:#9bdcff;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1"
        id="path836"
-       cx="63.229168"
-       cy="233.77083"
+       cx="13.336309"
+       cy="13.410708"
        r="13.229167" />
     <ellipse
        style="fill:#ffc839;fill-opacity:1;stroke:#ef9a00;stroke-width:2.36500001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.26339291"
        id="path858"
-       cx="63.229168"
-       cy="233.77083"
+       cx="13.336309"
+       cy="13.410708"
        rx="10.5835"
        ry="10.583333" />
   </g>
