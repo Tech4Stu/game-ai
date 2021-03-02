@@ -1,0 +1,99 @@
+/*Remove dropshadow from navbar-toggler*/
+.navbar-toggler:focus{
+	box-shadow: none;
+}
+
+/*Floating button*/
+.float{
+	position:fixed;
+	height:60px;
+	width:60px;
+	bottom:40px;
+	right:40px;
+	border-radius:50px;
+	border-style:none;
+}
+
+/*Dark mode support*/
+body{
+	background-color: var(--var-bg-color) !important;
+	color: var(--var-color) !important;
+}
+
+.nav-link.active, .nav-link.active:hover{
+	color: var(--var-color) !important;
+}
+
+.nav-link{
+	color: var(--var-color-dim) !important;
+}
+
+.nav-link:hover{
+	color: var(--var-color-dim-hover) !important;
+}
+
+.jumbotron, .card, .footer-basic{
+	background-color: var(--var-bg-color) !important;
+}
+
+.card{
+	border: 1px solid var(--var-border-color) !important;
+}
+
+.navbar-toggler-icon{
+	background-image: var(--var-toggler-icon) !important;
+}
+
+.btn.disabled{
+	color: var(--var-color) !important;
+}
+
+html, html[data-theme="light"]{
+	--var-bg-color: #fff;
+	--var-color: #212529;
+	--var-color-dim: rgba(0,0,0,.5);
+	--var-color-dim-hover: rgba(0,0,0,.7);
+	--var-border-color: rgba(0, 0, 0, 0.15);
+	--var-toggler-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+html[data-theme="dark"] {
+	--var-bg-color: #14122b;
+	--var-color: #fff;
+	--var-color-dim: rgba(255,255,255,.5);
+	--var-color-dim-hover: rgba(255,255,255,.7);
+	--var-border-color: rgba(255, 255, 255, 0.15);
+	--var-toggler-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+@media (prefers-color-scheme: dark) {
+	html, html[data-theme="dark"] {
+		--var-bg-color: #14122b;
+		--var-color: #fff;
+		--var-color-dim: rgba(255,255,255,.5);
+		--var-color-dim-hover: rgba(255,255,255,.7);
+		--var-border-color: rgba(255, 255, 255, 0.15);
+		--var-toggler-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+	}
+
+	html[data-theme="light"]{
+		--var-bg-color: #fff;
+		--var-color: #212529;
+		--var-color-dim: rgba(0,0,0,.5);
+		--var-color-dim-hover: rgba(0,0,0,.7);
+		--var-border-color: rgba(0, 0, 0, 0.15);
+		--var-toggler-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+	}
+}
+
+.col-link{
+	color:#007bff !important;
+}
+
+.col-link:hover{
+	color:#0070e8 !important;
+}
+
+.jumbo-text{
+	color: #fff !important;
+}
