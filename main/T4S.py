@@ -93,6 +93,8 @@ window_info = pygame.display.Info() #scherm info ophalen (hoogte/breedte)
 WINDOW_SIZE = (window_info.current_w, window_info.current_h) #hoogte/breedte toekennen
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)  # kiezen waar scherm wordt gezet
 screen = pygame.display.set_mode((WINDOW_SIZE[0], WINDOW_SIZE[1]), 0, 32) #screen is scherm waar alles op zal worden getekend
+
+### test 
 #foto's
 logo_img = pygame.image.load("images\T4S_logo.png").convert()
 logo_img.set_colorkey((255,255,255))
