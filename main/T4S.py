@@ -20,7 +20,7 @@ class krachten:
         self.y_dist = y_dist
         self.__Fx = self.F*math.cos(self.hoek)
         self.__Fy = self.F*math.sin(self.hoek)
-        self.__M = self.__Fy*self.x_dist + self.__Fx*self.y_dist   #pos is tegenklok
+        self.__M = self.__Fy*abs(self.x_dist) + self.__Fx*abs(self.y_dist)   #pos is tegenklok
 
         #return self.Fx, self.Fy, self.M
     def get_Fx(self):
@@ -31,6 +31,31 @@ class krachten:
 
     def get_M(self):
         return self.__M
+
+    def get_all(self):
+        return self.__Fx, self.__Fy, self.__M
+
+    def set_Fx(self, Fx):
+        self.__Fx = Fx
+
+    def set_Fy(self, Fy):
+        self.__Fy = Fy
+
+    def set_M(self, M):
+        self.__M = M
+
+    def set_all(self, Fx, Fy, M):
+        self.__Fx = Fx
+        self.__Fy = Fy
+        self.__M  = M
+
+    def __add__(self, other):
+        added_Fx = self.get_Fx() + other.get_Fx()
+        added_Fy = self.get_Fy() + other.get_Fy()
+        added_M  = self.get_M() + other.get_M()
+        result = krachten(0,0,0,0)
+        result.set_all(added_Fx, added_Fy, added_M)
+        return result
 
 
 class Car:
@@ -45,6 +70,7 @@ class Car:
         self.y_v = 0
         self.x_a = 0
         self.y_a = 0
+        self.I = self.width * self.height * self.height * self.height / 12 #traagheidsmoment bh³/12
         self.hoek = 0 #radialen
         self.omega = 0
         self.alpha = 0
@@ -73,13 +99,27 @@ class Car:
         pygame.draw.polygon(screen, red, ((x1,y1),(x2,y2),(x3,y3),(x4,y4)), 3)
 
 
-    def update(self, krachten):
+    def update(self, krachtenlijst):
         '''
         krijgt een lijst binnen van alle werkende krachten op auto en veranderd x,y,v,a,... volgens deze krachten
-        :param krachten: krachten lijst
+        :param krachten: krachten lijst , zijnde Fz, Fgas, Frem, Fcoll, (Fvering)
         :return: /
         '''
-        pass
+        total_F = krachten(0,0,0,0) #is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
+        for kracht in krachtenlijst:
+            total_F += kracht
+        print(total_F.get_all())
+        #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
+        self.x_a = total_F.get_Fx()/self.mass
+        self.x_v = 1
+        self.centerx = 1
+        self.y_a = total_F.get_Fy()/self.mass
+        self.y_v = 1
+        self.centery = 1
+        #somM = I*alpha
+        self.alpha = total_F.get_M()/self.I
+        self.omega = 1
+        self.hoek = 1
 
 #KLEUREN
 black   = (0,0,0)
@@ -173,12 +213,20 @@ def game_loop():
     '''
     latch = 1
     t = 0
-    car = Car(WINDOW_SIZE[0]//2, 300, 100, 50, 5)
+    car = Car(WINDOW_SIZE[0]//4, 100, 100, 50, 5)
+    g = 9.81
+    Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
+    Fgas = krachten(100, 0, -car.width/2, -car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
+    Frem = krachten(100, math.pi, -car.width/2, -car.height/2)  #remkracht idem
+    Fcoll = krachten(0,0,0,0)                                   #collision kracht
     left = False
     right = False
     running = True
     while running:
+        #scherm resetten
         screen.fill(white)
+        krachtenlijst = []
+        #events handelen
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -195,14 +243,13 @@ def game_loop():
                     left = False
                 if event.key == K_RIGHT:
                     right = False
-
+        # keyinputs handelen
         if left:
-            car.hoek += 0.01
+            krachtenlijst.append(Frem)
         if right:
-            car.hoek -= 0.01
-
-        t += segments / 400
+            krachtenlijst.append(Fgas)
         # Draw terrain
+        t += segments / 400
         for segment in road:
             segment.draw(segments / 2 + t / 5)
             # In en uitladen terrain
@@ -212,6 +259,10 @@ def game_loop():
             if segment.beginx >= WINDOW_SIZE[0]:
                 road.remove(segment)
                 road.append(Line(segment.index - segments))
+        #auto handelen
+        krachtenlijst.append(Fz)
+        krachtenlijst.append(Fcoll)
+        car.update(krachtenlijst)
         car.draw()
 
         pygame.display.update()
@@ -304,7 +355,6 @@ for segment in range(segments):
     road.append(Line(i))
     i+=1
 run = True
-print(krachten(100, 3.1415/3, 4,3).get_M())
 while run:
     screen.fill((69,69,69))
     for event in pygame.event.get():
