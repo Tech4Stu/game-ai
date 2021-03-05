@@ -73,7 +73,7 @@ class Car:
         self.x_a = 0
         self.y_a = 0
         self.I = self.width * self.height * self.height * self.height / 12 #traagheidsmoment bh³/12
-        self.hoek = 0.05 #radialen
+        self.hoek = 0 #radialen
         self.omega = 0
         self.alpha = 0
         #hoekpunten bepalen
@@ -221,8 +221,8 @@ class Line:
         y4 = line.endy
 
         div = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
-        x = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div
-        y = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div
+        x = int(((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div)
+        y = int(((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div)
 
         a = False
         b = False
