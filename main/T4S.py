@@ -173,7 +173,6 @@ class Perlin:
         return amt*(stop-start)+start
 
 
-
 #line class
 class Line:
     def __init__(self,index):
@@ -188,6 +187,59 @@ class Line:
         self.beginx = WINDOW_SIZE[0]/segments * (self.index + segments/2 - centerindex)
         self.endx = WINDOW_SIZE[0]/segments * (self.index + (segments/2)+1 - centerindex)
         pygame.draw.line(screen,self.color,(self.beginx,self.beginy),(self.endx,self.endy),self.width)
+
+    def collide(self,line):
+        x1 = self.beginx
+        x2 = self.endx
+        x3 = line.beginx
+        x4 = line.endx
+        y1 = self.beginy
+        y2 = self.endy
+        y3 = line.beginy
+        y4 = line.endy
+
+        div = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
+        x = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div
+        y = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div
+
+        a = False
+        b = False
+        c = False
+        d = False
+
+        kleinste = x1
+        grootste = x2
+
+        if x1 > x2:
+            grootste = x1
+            kleinste = x2
+
+        if kleinste < x < grootste:
+            a = True
+
+        if x3 > x4:
+            if x4 < x and x < x3:
+                b = True
+        else:
+            if x3 < x and x < x4:
+                b = True
+
+        if y1 > y2:
+            if y2 < y and y < y1:
+                c = True
+        else:
+            if y1 < y and y < y2:
+                c = True
+
+        if y3 > y4:
+            if y4 < y and y < y3:
+                d = True
+        else:
+            if y3 < y and y < y4:
+                d = True
+
+        if a and b and c and d:
+            pygame.draw.circle(gameDisplay, (255, 0, 0), (x, y), 10)
 
 #map maken in lijst terrein
 
@@ -262,8 +314,11 @@ def game_loop():
         #auto handelen
         krachtenlijst.append(Fz)
         krachtenlijst.append(Fcoll)
+
         car.update(krachtenlijst)
         car.draw()
+
+
 
         pygame.display.update()
 
