@@ -57,8 +57,8 @@ class krachten:
         result.set_all(added_Fx, added_Fy, added_M)
         return result
 
-    def draw(self,car):
-        pygame.draw.line(screen,black,(car.centerx+self.x_dist,car.centery+self.y_dist),(car.centerx+self.x_dist+self.__Fx,car.centery+self.y_dist+self.__Fy),10)
+    def draw(self,car, color=(0,0,0)):
+        pygame.draw.line(screen,color,(car.centerx+self.x_dist,car.centery+self.y_dist),(car.centerx+self.x_dist+self.__Fx,car.centery+self.y_dist+self.__Fy),5)
 
 class Car:
     def __init__(self, x, y, width, height, mass):
@@ -117,11 +117,12 @@ class Car:
         :param krachten: krachten lijst , zijnde Fz, Fgas, Frem, Fcoll, (Fvering)
         :return: /
         '''
+        total_F = krachten(0, 0, 0,
+                           0)  # is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
+        for kracht in krachtenlijst:
+            total_F += kracht
+        total_F.draw(self, color=(0,255,0))
         if 0:  #tijdelijk afzetten voor test collision
-            total_F = krachten(0,0,0,0) #is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
-            for kracht in krachtenlijst:
-                total_F += kracht
-            print(total_F.get_all())
             #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
             self.x_a = total_F.get_Fx()/self.mass
             self.x_v = 1
@@ -221,8 +222,8 @@ class Line:
         y4 = line.endy
 
         div = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
-        x = int(((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div)
-        y = int(((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div)
+        x = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div
+        y = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div
 
         a = False
         b = False
@@ -256,10 +257,8 @@ class Line:
         else:
             if y3 <= y and y <= y4:
                 d = True
-
-
         if a and b and c and d:
-            pygame.draw.circle(screen, (0, 0, 255), (x, y), 10)
+            pygame.draw.circle(screen, (0, 0, 255), (int(x), int(y)), 10)
             return (x,y)
 
 #roadsegment class
@@ -302,7 +301,7 @@ def game_loop():
     '''
     latch = 1
     t = 0
-    car = Car(WINDOW_SIZE[0]//2, 300, 100, 50, 5)
+    car = Car(WINDOW_SIZE[0]//2, 600, 100, 50, 5)
     g = 9.81
     Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
     Fgas = krachten(100, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
