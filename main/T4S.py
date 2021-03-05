@@ -9,7 +9,9 @@ import random
 def reactie(punten,car):
     if len(punten) == 2 and punten[0] != punten[1]:
         hoek = float(math.atan2(punten[1][1]-punten[0][1],punten[0][0]-punten[1][0]))
-        return [100,hoek - math.pi/2, (punten[0][0]+punten[1][0])/2 - car.centerx,(punten[1][1]+punten[0][1])/2-car.centery]
+        corr_hoek = hoek - math.pi/2
+        return [100, corr_hoek, (punten[0][0] + punten[1][0]) / 2 - car.centerx,
+                (punten[1][1] + punten[0][1]) / 2 - car.centery]
     else:
         return 5
 
@@ -309,7 +311,7 @@ def game_loop():
     '''
     latch = 1
     t = 0
-    car = Car(WINDOW_SIZE[0]//2, 600, 100, 50, 5)
+    car = Car(WINDOW_SIZE[0]//2, 300, 100, 50, 5)
     g = 9.81
     Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
     Fgas = krachten(100, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
