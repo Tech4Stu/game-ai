@@ -32,9 +32,7 @@ class krachten:
         self.hoek = hoek
         self.x_dist = x_dist
         self.y_dist = y_dist
-        self.__Fx = self.F*math.cos(self.hoek)
-        self.__Fy = -self.F*math.sin(self.hoek)
-        self.__M = self.__Fy*abs(self.x_dist) + self.__Fx*abs(self.y_dist)   #pos is tegenklok
+        self.update()
 
         #return self.Fx, self.Fy, self.M
     def get_Fx(self):
@@ -63,6 +61,11 @@ class krachten:
         self.__Fy = Fy
         self.__M  = M
 
+    def set_pos(self, x, y):
+        self.x_dist = x
+        self.y_dist = y
+        self.update()
+
     def __add__(self, other):
         added_Fx = self.get_Fx() + other.get_Fx()
         added_Fy = self.get_Fy() + other.get_Fy()
@@ -73,6 +76,15 @@ class krachten:
 
     def draw(self,car, color=(0,0,0)):
         pygame.draw.line(screen,color,(car.centerx+self.x_dist,car.centery+self.y_dist),(car.centerx+self.x_dist+self.__Fx*1000,car.centery+self.y_dist+self.__Fy*1000),5)
+
+    def update(self):
+        '''
+        update was nodig om alle krachten te herberekenen wnr x/y wordt veranderd
+        :return: /
+        '''
+        self.__Fx = self.F * math.cos(self.hoek)
+        self.__Fy = -self.F * math.sin(self.hoek)
+        self.__M = self.__Fy * abs(self.x_dist) + self.__Fx * abs(self.y_dist)  # pos is tegenklok
 
 class Car:
     def __init__(self, x, y, width, height, mass):
@@ -92,24 +104,11 @@ class Car:
         self.omega = 0
         self.alpha = 0
         #hoekpunten bepalen
-        self.L = math.sqrt((self.height*self.height+self.width*self.width)/4) #lengte van center -> hoekpunten
-        self.hoekpunthoek = math.atan2(self.height, self.width) #geeft hoek van center -> hoekpunten atan2 == atan(y/x)
+        self.L = math.sqrt((self.height*self.height+self.width*self.width)/4) #lengte van center -> hoekpunten /diagonaal
+        self.hoekpunthoek = math.atan(self.height/self.width) #geeft hoek van center -> hoekpunten atan2 == atan(y/x)
         #de vier lijnen voor collision
-
+        self.calculate_pos()
         self.collisionbox = []
-
-        alpha1 = math.pi - self.hoekpunthoek + self.hoek
-        alpha2 = self.hoekpunthoek + self.hoek
-        alpha3 = -self.hoekpunthoek + self.hoek
-        alpha4 = math.pi + self.hoekpunthoek + self.hoek
-        self.x1 = self.L * math.cos(alpha1) + self.centerx
-        self.y1 = self.L * math.sin(alpha1) + self.centery
-        self.x2 = self.L * math.cos(alpha2) + self.centerx
-        self.y2 = self.L * math.sin(alpha2) + self.centery
-        self.x3 = self.L * math.cos(alpha3) + self.centerx
-        self.y3 = self.L * math.sin(alpha3) + self.centery
-        self.x4 = self.L * math.cos(alpha4) + self.centerx
-        self.y4 = self.L * math.sin(alpha4) + self.centery
         self.collisionbox.append(Line(self.x1, self.y1, self.x2, self.y2))
         self.collisionbox.append(Line(self.x2, self.y2, self.x3, self.y3))
         self.collisionbox.append(Line(self.x3, self.y3, self.x4, self.y4))
@@ -121,10 +120,23 @@ class Car:
         self.collisionbox.append(Line(self.x2, self.y2, self.x3, self.y3))
         self.collisionbox.append(Line(self.x3, self.y3, self.x4, self.y4))
         self.collisionbox.append(Line(self.x4, self.y4, self.x1, self.y1))
+        pygame.draw.circle(screen, red, (int(self.x1), int(self.y1)), 10)
         for line in self.collisionbox:
             line.draw()
 
-
+    def calculate_pos(self):
+        alpha1 = math.pi - self.hoekpunthoek + self.hoek
+        alpha2 = self.hoekpunthoek + self.hoek
+        alpha3 = -self.hoekpunthoek + self.hoek
+        alpha4 = math.pi + self.hoekpunthoek + self.hoek
+        self.x1 = self.L * math.cos(alpha1) + self.centerx
+        self.y1 = -self.L * math.sin(alpha1) + self.centery
+        self.x2 = self.L * math.cos(alpha2) + self.centerx
+        self.y2 = -self.L * math.sin(alpha2) + self.centery
+        self.x3 = self.L * math.cos(alpha3) + self.centerx
+        self.y3 = -self.L * math.sin(alpha3) + self.centery
+        self.x4 = self.L * math.cos(alpha4) + self.centerx
+        self.y4 = -self.L * math.sin(alpha4) + self.centery
 
     def update(self, krachtenlijst):
         '''
@@ -136,6 +148,7 @@ class Car:
         for kracht in krachtenlijst:
             total_F += kracht
         total_F.draw(self, color=(0,255,0))
+        engine.Label(screen, (50, 50), f"M: {round(total_F.get_M(), 3)}").draw()
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
         self.x_a = total_F.get_Fx()/self.mass
         self.x_v += self.x_a
@@ -147,25 +160,12 @@ class Car:
         self.y_v *= 0.999
         self.centery += self.y_v
 
-
-
         #somM = I*alpha
         self.alpha = total_F.get_M()/self.I
         self.omega += self.alpha
         self.hoek += self.omega
 
-        alpha1 = math.pi - self.hoekpunthoek + self.hoek
-        alpha2 = self.hoekpunthoek + self.hoek
-        alpha3 = -self.hoekpunthoek + self.hoek
-        alpha4 = math.pi + self.hoekpunthoek + self.hoek
-        self.x1 = self.L * math.cos(alpha1) + self.centerx
-        self.y1 = self.L * math.sin(alpha1) + self.centery
-        self.x2 = self.L * math.cos(alpha2) + self.centerx
-        self.y2 = self.L * math.sin(alpha2) + self.centery
-        self.x3 = self.L * math.cos(alpha3) + self.centerx
-        self.y3 = self.L * math.sin(alpha3) + self.centery
-        self.x4 = self.L * math.cos(alpha4) + self.centerx
-        self.y4 = self.L * math.sin(alpha4) + self.centery
+        self.calculate_pos()
 
 #KLEUREN
 black   = (0,0,0)
@@ -321,9 +321,6 @@ def game_loop():
     car = Car(WINDOW_SIZE[0]//2, -20, 100, 50, 5)
     g = 0.005
     Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
-    Fgas = krachten(0.1, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
-    Frem = krachten(0.1, math.pi, -car.width/2, car.height/2)  #remkracht idem
-    Fcoll = krachten(0,0,0,0)                                   #collision kracht
     left = False
     right = False
     running = True
@@ -349,10 +346,12 @@ def game_loop():
                 if event.key == K_RIGHT:
                     right = False
         # keyinputs handelen
-        if left:
-            krachtenlijst.append(Frem)
         if right:
+            Fgas = krachten(0.1, car.hoek, -car.L*math.cos(car.hoek+car.hoekpunthoek), car.L*math.sin(car.hoek+car.hoekpunthoek))  # gaskracht waarde kan bepaald worden nu gwn 100
             krachtenlijst.append(Fgas)
+        if left:
+            Frem = krachten(0.1, math.pi+car.hoek, -car.L*math.cos(car.hoek+car.hoekpunthoek), car.L*math.sin(car.hoek+car.hoekpunthoek))  # remkracht idem
+            krachtenlijst.append(Frem)
         # Draw terrain
         for segment in road:
             # In en uitladen terrain
@@ -381,7 +380,6 @@ def game_loop():
             reactiekracht = reactie(collisions,car)
             krachtenlijst.append(krachten(reactiekracht[0],reactiekracht[1],reactiekracht[2],reactiekracht[3]))
 
-        krachtenlijst.append(Fcoll)
         car.update(krachtenlijst)
         car.draw()
 
