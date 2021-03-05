@@ -10,9 +10,13 @@ def reactie(punten,car):
     if len(punten) == 2 and punten[0] != punten[1]:
         hoek = float(math.atan2(punten[1][1]-punten[0][1],punten[0][0]-punten[1][0]))
         corr_hoek = hoek - math.pi/2
-        return [100, corr_hoek, (punten[0][0] + punten[1][0]) / 2 - car.centerx,
+        kracht = 1
+        
+        return [kracht, corr_hoek, (punten[0][0] + punten[1][0]) / 2 - car.centerx,
                 (punten[1][1] + punten[0][1]) / 2 - car.centery]
     else:
+        print("meer dan 2 punten")
+        quit()
         return 5
 
 class krachten:
@@ -68,10 +72,11 @@ class krachten:
         return result
 
     def draw(self,car, color=(0,0,0)):
-        pygame.draw.line(screen,color,(car.centerx+self.x_dist,car.centery+self.y_dist),(car.centerx+self.x_dist+self.__Fx,car.centery+self.y_dist+self.__Fy),5)
+        pygame.draw.line(screen,color,(car.centerx+self.x_dist,car.centery+self.y_dist),(car.centerx+self.x_dist+self.__Fx*1000,car.centery+self.y_dist+self.__Fy*1000),5)
 
 class Car:
     def __init__(self, x, y, width, height, mass):
+        self.mapx = 0
         self.centerx = x
         self.centery = y
         self.width = width
@@ -131,18 +136,23 @@ class Car:
         for kracht in krachtenlijst:
             total_F += kracht
         total_F.draw(self, color=(0,255,0))
-        if 0:  #tijdelijk afzetten voor test collision
-            #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
-            self.x_a = total_F.get_Fx()/self.mass
-            self.x_v = 1
-            self.centerx = 1
-            self.y_a = total_F.get_Fy()/self.mass
-            self.y_v = 1
-            self.centery = 1
-            #somM = I*alpha
-            self.alpha = total_F.get_M()/self.I
-            self.omega = 1
-            self.hoek = 1
+        #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
+        self.x_a = total_F.get_Fx()/self.mass
+        self.x_v += self.x_a
+        self.x_v *= 0.999
+        self.mapx += self.x_v
+
+        self.y_a = total_F.get_Fy()/self.mass
+        self.y_v += self.y_a
+        self.y_v *= 0.999
+        self.centery += self.y_v
+
+
+
+        #somM = I*alpha
+        self.alpha = total_F.get_M()/self.I
+        self.omega += self.alpha
+        self.hoek += self.omega
 
         alpha1 = math.pi - self.hoekpunthoek + self.hoek
         alpha2 = self.hoekpunthoek + self.hoek
@@ -280,9 +290,9 @@ class Roadsegment:
         self.endy = WINDOW_SIZE[1]/2 + noise.valueAt(index+1)*WINDOW_SIZE[1]/3
         self.width = 5
 
-    def draw(self,centerindex):
-        self.beginx = WINDOW_SIZE[0]/segments * (self.index + segments/2 - centerindex)
-        self.endx = WINDOW_SIZE[0]/segments * (self.index + (segments/2)+1 - centerindex)
+    def draw(self,mapx):
+        self.beginx = WINDOW_SIZE[0]/segments * (self.index - mapx/segments)
+        self.endx = WINDOW_SIZE[0]/segments * (self.index + 1 - mapx/segments)
         pygame.draw.line(screen,self.color,(self.beginx,self.beginy),(self.endx,self.endy),self.width)
 
 
@@ -308,13 +318,11 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-    latch = 1
-    t = 0
-    car = Car(WINDOW_SIZE[0]//2, 400, 100, 50, 5)
-    g = 9.81
+    car = Car(WINDOW_SIZE[0]//2, -20, 100, 50, 5)
+    g = 0.005
     Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
-    Fgas = krachten(100, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
-    Frem = krachten(100, math.pi, -car.width/2, car.height/2)  #remkracht idem
+    Fgas = krachten(0.1, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
+    Frem = krachten(0.1, math.pi, -car.width/2, car.height/2)  #remkracht idem
     Fcoll = krachten(0,0,0,0)                                   #collision kracht
     left = False
     right = False
@@ -346,16 +354,20 @@ def game_loop():
         if right:
             krachtenlijst.append(Fgas)
         # Draw terrain
-        t += segments / 400
         for segment in road:
-            segment.draw(segments / 2 + t / 5)
             # In en uitladen terrain
+            segment.draw(car.mapx)
             if segment.endx <= 0:
+                new = Roadsegment(segment.index + segments)
                 road.remove(segment)
-                road.append(Roadsegment(segment.index + segments))
+                road.append(new)
+                new.draw(car.mapx)
             if segment.beginx >= WINDOW_SIZE[0]:
+                new = Roadsegment(segment.index - segments)
                 road.remove(segment)
-                road.append(Roadsegment(segment.index - segments))
+                new.draw(car.mapx)
+                road.append(new)
+
         #auto handelen
         krachtenlijst.append(Fz)
 
@@ -366,13 +378,10 @@ def game_loop():
                 if point != None:
                     collisions.append(line.collide(stuk))
         if len(collisions) != 0:
-            print(collisions)
             reactiekracht = reactie(collisions,car)
             krachtenlijst.append(krachten(reactiekracht[0],reactiekracht[1],reactiekracht[2],reactiekracht[3]))
 
         krachtenlijst.append(Fcoll)
-
-
         car.update(krachtenlijst)
         car.draw()
 
@@ -468,6 +477,7 @@ segments = 50
 
 #Noise klaar zetten
 noise = Perlin(500//segments) ## frequentie terrain
+
 #road initialiseren
 road = []
 i = 0
