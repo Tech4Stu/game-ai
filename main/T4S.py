@@ -5,15 +5,31 @@ pygame.init()
 clock = pygame.time.Clock()
 import random
 
+def totaal(krachtenlijst):
+        kracht = krachten(0, 0, 0, 0)  # is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
+        for i in krachtenlijst:
+            kracht += i
+        return kracht
 
-def reactie(punten,car):
+def draw_krachten(naam, kracht, index):
+    engine.Label(screen, (50 + 110*index,  50), f"{naam}:").draw()
+    engine.Label(screen, (50 + 110*index, 100), f"Fx: {round(kracht.get_Fx(), 2)}").draw()
+    engine.Label(screen, (50 + 110*index, 150), f"Fy: {round(kracht.get_Fy(), 2)}").draw()
+    engine.Label(screen, (50 + 110*index, 200), f"M : {round(kracht.get_M(),  2)}").draw()
+
+def reactie(punten, car, krachtenlijst):
+    total_F = totaal(krachtenlijst)
     if len(punten) == 2 and punten[0] != punten[1]:
         hoek = float(math.atan2(punten[1][1]-punten[0][1],punten[0][0]-punten[1][0]))
         corr_hoek = hoek - math.pi/2
         kracht = 1
-
-        return [kracht, corr_hoek, (punten[0][0] + punten[1][0]) / 2 - car.centerx,
-                (punten[1][1] + punten[0][1]) / 2 - car.centery]
+        result = krachten(kracht,
+                        corr_hoek,
+                        (punten[0][0] + punten[1][0]) / 2 - car.centerx,
+                        (punten[1][1] + punten[0][1]) / 2 - car.centery)
+        result.set_Fx(result.get_Fx()-total_F.get_Fx())
+        result.set_Fy(result.get_Fy()-total_F.get_Fy())
+        return result
     else:
         print("meer dan 2 punten")
         quit()
@@ -144,11 +160,8 @@ class Car:
         :param krachten: krachten lijst , zijnde Fz, Fgas, Frem, Fcoll, (Fvering)
         :return: /
         '''
-        total_F = krachten(0, 0, 0, 0)  # is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
-        for kracht in krachtenlijst:
-            total_F += kracht
+        total_F = totaal(krachtenlijst)
         total_F.draw(self, color=(0,255,0))
-        engine.Label(screen, (50, 50), f"M: {round(total_F.get_M(), 3)}").draw()
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
         self.x_a = total_F.get_Fx()/self.mass
         self.x_v += self.x_a
@@ -377,9 +390,8 @@ def game_loop():
                 if point != None:
                     collisions.append(line.collide(stuk))
         if len(collisions) != 0:
-            reactiekracht = reactie(collisions,car)
-            krachtenlijst.append(krachten(reactiekracht[0],reactiekracht[1],reactiekracht[2],reactiekracht[3]))
-
+            reactiekracht = reactie(collisions, car, krachtenlijst)
+            krachtenlijst.append(reactiekracht)
         car.update(krachtenlijst)
         car.draw()
 
