@@ -11,7 +11,7 @@ def reactie(punten,car):
         hoek = float(math.atan2(punten[1][1]-punten[0][1],punten[0][0]-punten[1][0]))
         corr_hoek = hoek - math.pi/2
         kracht = 1
-        
+
         return [kracht, corr_hoek, (punten[0][0] + punten[1][0]) / 2 - car.centerx,
                 (punten[1][1] + punten[0][1]) / 2 - car.centery]
     else:
