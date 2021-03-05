@@ -5,6 +5,14 @@ pygame.init()
 clock = pygame.time.Clock()
 import random
 
+
+def reactie(punten,car):
+    if len(punten) == 2 and punten[0] != punten[1]:
+        hoek = float(math.atan2(punten[1][1]-punten[0][1],punten[0][0]-punten[1][0]))
+        return [100,hoek - math.pi/2, (punten[0][0]+punten[1][0])/2 - car.centerx,(punten[1][1]+punten[0][1])/2-car.centery]
+    else:
+        return 5
+
 class krachten:
     def __init__(self, F, hoek, x_dist, y_dist):
         '''
@@ -73,7 +81,7 @@ class Car:
         self.x_a = 0
         self.y_a = 0
         self.I = self.width * self.height * self.height * self.height / 12 #traagheidsmoment bh³/12
-        self.hoek = 0 #radialen
+        self.hoek = 0.05 #radialen
         self.omega = 0
         self.alpha = 0
         #hoekpunten bepalen
@@ -221,8 +229,8 @@ class Line:
         y4 = line.endy
 
         div = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
-        x = int(((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div)
-        y = int(((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div)
+        x = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/div
+        y = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/div
 
         a = False
         b = False
@@ -351,9 +359,16 @@ def game_loop():
         #auto handelen
         krachtenlijst.append(Fz)
 
+        collisions =[]
         for stuk in road:
             for line in car.collisionbox:
-                line.collide(stuk)
+                point = line.collide(stuk)
+                if point != None:
+                    collisions.append(line.collide(stuk))
+        if len(collisions) != 0:
+            print(collisions)
+            reactiekracht = reactie(collisions,car)
+            krachtenlijst.append(krachten(reactiekracht[0],reactiekracht[1],reactiekracht[2],reactiekracht[3]))
 
         krachtenlijst.append(Fcoll)
 
