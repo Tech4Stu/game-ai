@@ -117,8 +117,7 @@ class Car:
         :param krachten: krachten lijst , zijnde Fz, Fgas, Frem, Fcoll, (Fvering)
         :return: /
         '''
-        total_F = krachten(0, 0, 0,
-                           0)  # is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
+        total_F = krachten(0, 0, 0, 0)  # is een object krachten() die de som van alle ingegeven/inwerkende krachten op de auto
         for kracht in krachtenlijst:
             total_F += kracht
         total_F.draw(self, color=(0,255,0))
@@ -301,7 +300,7 @@ def game_loop():
     '''
     latch = 1
     t = 0
-    car = Car(WINDOW_SIZE[0]//2, 600, 100, 50, 5)
+    car = Car(WINDOW_SIZE[0]//2, 400, 100, 50, 5)
     g = 9.81
     Fz = krachten(car.mass*g, -math.pi/2, 0, 0)                 #zwaartekracht m*g
     Fgas = krachten(100, 0, -car.width/2, car.height/2)        #gaskracht waarde kan bepaald worden nu gwn 100
