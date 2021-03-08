@@ -100,5 +100,7 @@ html[data-theme="dark"] {
 
 /* Home */
 .skew{
-	border-bottom: 50px solid transparent;
+	transform: skew(-10deg) rotate(2deg);
+  -webkit-transform: skew(-10deg) rotate(2deg);
+  -moz-transform: skew(-10deg) rotate(2deg);
 }
