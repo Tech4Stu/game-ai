@@ -97,3 +97,8 @@ html[data-theme="dark"] {
 .jumbo-text{
 	color: #fff !important;
 }
+
+/* Home */
+.skew{
+	border-bottom: 50px solid transparent;
+}
