@@ -23,7 +23,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-light navbar-expand-md shadow">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/"><img src="assets/images/logo.png" alt="LOGO" height="65em"></a>
+        <a class="navbar-brand" href="/"><img src="assets/images/hillclimber_logo.png" alt="HillClimber" height="65em"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -31,32 +31,32 @@
           <ul class="nav navbar-nav flex-grow-1 justify-content-end align-items-center">
             {% if page.title == "Home" %}
             <li class="nav-item"><a class="nav-link text-center active" href="/" style="font-size: 18px;">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/game" style="font-size: 18px;">Game</a></li>
-		        <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/downloads" style="font-size: 18px;">Downloads</a></li>
+
+            {% elsif page.title == "AI" %}
+            <li class="nav-item"><a class="nav-link text-center" href="/" style="font-size: 18px;">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-center active" href="/ai" style="font-size: 18px;">AI</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/game" style="font-size: 18px;">Game</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/downloads" style="font-size: 18px;">Downloads</a></li>
 
             {% elsif page.title == "Game" %}
             <li class="nav-item"><a class="nav-link text-center" href="/" style="font-size: 18px;">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center active" href="/game" style="font-size: 18px;">Game</a></li>
-		        <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
-            <li class="nav-item"><a class="nav-link text-center" href="/downloads" style="font-size: 18px;">Downloads</a></li>
-
-		        {% elsif page.title == "AI" %}
-            <li class="nav-item"><a class="nav-link text-center" href="/" style="font-size: 18px;">Home</a></li>
-            <li class="nav-item"><a class="nav-link text-center" href="/game" style="font-size: 18px;">Game</a></li>
-            <li class="nav-item"><a class="nav-link text-center active" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/downloads" style="font-size: 18px;">Downloads</a></li>
 
             {% elsif page.title == "Downloads" %}
             <li class="nav-item"><a class="nav-link text-center" href="/" style="font-size: 18px;">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/game" style="font-size: 18px;">Game</a></li>
-		        <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center active" href="/downloads" style="font-size: 18px;">Downloads</a></li>
 
             {% else %}
             <li class="nav-item"><a class="nav-link text-center" href="/" style="font-size: 18px;">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/game" style="font-size: 18px;">Game</a></li>
-		        <li class="nav-item"><a class="nav-link text-center" href="/ai" style="font-size: 18px;">AI</a></li>
             <li class="nav-item"><a class="nav-link text-center" href="/downloads" style="font-size: 18px;">Downloads</a></li>
 
             {% endif %}
