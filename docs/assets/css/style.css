@@ -99,8 +99,20 @@ html[data-theme="dark"] {
 }
 
 /* Home */
-.skew{
-	transform: skew(-10deg) rotate(2deg);
-  -webkit-transform: skew(-10deg) rotate(2deg);
-  -moz-transform: skew(-10deg) rotate(2deg);
+.skew-container-right{
+	transform: skewY(-5deg);
+	overflow: hidden;
+}
+
+.skew-image-right{
+	transform: skewY(5deg);
+}
+
+.skew-container-left{
+	transform: skewY(5deg);
+	overflow: hidden;
+}
+
+.skew-image-left{
+	transform: skewY(-5deg);
 }
