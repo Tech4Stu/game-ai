@@ -295,12 +295,16 @@ class Line:
 
 #roadsegment class
 class Roadsegment:
-    def __init__(self,index):
+    def __init__(self,index, flat=False):
         self.index = index
         self.color = black
         #FUNCTIE VOOR HOOGTE
-        self.beginy = WINDOW_SIZE[1]/2 + noise.valueAt(index)*WINDOW_SIZE[1]/3
-        self.endy = WINDOW_SIZE[1]/2 + noise.valueAt(index+1)*WINDOW_SIZE[1]/3
+        if flat:
+            self.beginy = WINDOW_SIZE[1]-100
+            self.endy = WINDOW_SIZE[1]-100
+        else:
+            self.beginy = WINDOW_SIZE[1]/2 + noise.valueAt(index)*WINDOW_SIZE[1]/3
+            self.endy = WINDOW_SIZE[1]/2 + noise.valueAt(index+1)*WINDOW_SIZE[1]/3
         self.width = 5
 
     def draw(self,mapx):
@@ -370,12 +374,12 @@ def game_loop():
             # In en uitladen terrain
             segment.draw(car.mapx)
             if segment.endx <= 0:
-                new = Roadsegment(segment.index + segments)
+                new = Roadsegment(segment.index + segments, flat=FLAT)
                 road.remove(segment)
                 road.append(new)
                 new.draw(car.mapx)
             if segment.beginx >= WINDOW_SIZE[0]:
-                new = Roadsegment(segment.index - segments)
+                new = Roadsegment(segment.index - segments, flat=FLAT)
                 road.remove(segment)
                 new.draw(car.mapx)
                 road.append(new)
@@ -480,19 +484,16 @@ settings_button = engine.Button(screen,
 #parameters
 hoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
-
 #resolutie road
 segments = 50
-
-
 #Noise klaar zetten
 noise = Perlin(500//segments) ## frequentie terrain
-
+FLAT = True # zal een flat wereld genereren voor op te testen
 #road initialiseren
 road = []
 i = 0
 for segment in range(segments):
-    road.append(Roadsegment(i))
+    road.append(Roadsegment(i, flat=FLAT))
     i+=1
 run = True
 while run:
