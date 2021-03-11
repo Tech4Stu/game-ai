@@ -1,14 +1,20 @@
 ---
 layout: default
 title: AI
+custom_css: ai
 ---
 <!--Extra css-->
-{% include <link rel="stylesheet" href="/docs/assets/css/ai.css">
+{% if page.custom_css %}
+{% for stylesheet in page.custom_css %}
+ <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/{{ stylesheet }}.css">
+{% endfor %}
+{% endif %}
 
 <!--Main content-->
 <h1 class="center">Welcome to the AI page</h1>
 <h2 class="center">A little explanation</h2>
 <p>BLA BLA BALA BLA</p>
+<p>test 2</p>
 
 <h2 class="center">Updates</h2>
 <div class="card">

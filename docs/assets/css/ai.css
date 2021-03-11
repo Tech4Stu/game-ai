@@ -1,7 +1,7 @@
 .card-body 
 {
-    border-color: white;
-    color: white;
+    border-color: white !important;
+    color : white !important;
 }
 .center 
 {
