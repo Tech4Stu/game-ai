@@ -1,9 +1,13 @@
-.card-body 
+.card 
 {
-    border-color: white !important;
-    color : white !important;
+    border-color: white;
+    margin: 1%;
 }
 .center 
 {
     text-align: center;
+}
+.title 
+{
+    background-image: url("/assets/images/Keyboard.jpg");
 }
