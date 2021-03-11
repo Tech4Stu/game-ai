@@ -10,11 +10,11 @@
 
 .flex 
 {
-    display: flex;
-    flex-direction: row;
+    display: flex  !important;
+    flex-direction: row  !important;
 }
 .card-image 
 {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 200px !important;
+    max-height: 200px !important;
 }
