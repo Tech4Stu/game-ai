@@ -11,6 +11,7 @@ import pygame, sys, math, os, engine, random
 from pygame.locals import*
 pygame.init()
 clock = pygame.time.Clock()
+from math import sin
 #kleuren
 black = (0,0,0)
 white = (255,255,255)
@@ -155,74 +156,44 @@ class Line:
             return (x,y)
 
 class Car:
-    def __init__(self, x, y, width, height, mass):
-        self.mapx = 0
-        self.centerx = x
-        self.centery = y
-        self.width = width
-        self.height = height
-        self.mass = mass
-        #krachten (snelheid, versnelling)
+    def __init__(self, x, y, r):
+        self.x = x
         self.x_v = 0
-        self.y_v = 0
         self.x_a = 0
+        self.y = y
+        self.y_v = 0
         self.y_a = 0
-        self.I = self.width * self.height * self.height * self.height / 12 #traagheidsmoment bh³/12
-        self.hoek = 0.05 #radialen
-        self.omega = 0
-        self.alpha = 0
-        #hoekpunten bepalen
-        self.L = math.sqrt((self.height*self.height+self.width*self.width)/4) #lengte van center -> hoekpunten /diagonaal
-        self.hoekpunthoek = math.atan(self.height/self.width) #geeft hoek van center -> hoekpunten atan2 == atan(y/x)
-        #de vier lijnen voor collision
-        self.calculate_pos()
-        self.collisionbox = []
-        self.collisionbox.append(Line(self.x1, self.y1, self.x2, self.y2))
-        self.collisionbox.append(Line(self.x2, self.y2, self.x3, self.y3))
-        self.collisionbox.append(Line(self.x3, self.y3, self.x4, self.y4))
-        self.collisionbox.append(Line(self.x4, self.y4, self.x1, self.y1))
+        self.r = r
+        self.color = (0,0,255)
+        self.mapx = 0
+        self.xthresh = 0.5
+        self.drive = 0.1
 
     def draw(self):
-        self.collisionbox = []
-        self.collisionbox.append(Line(self.x1, self.y1, self.x2, self.y2))
-        self.collisionbox.append(Line(self.x2, self.y2, self.x3, self.y3))
-        self.collisionbox.append(Line(self.x3, self.y3, self.x4, self.y4))
-        self.collisionbox.append(Line(self.x4, self.y4, self.x1, self.y1))
-        pygame.draw.circle(screen, red, (int(self.x1), int(self.y1)), 10)
-        for line in self.collisionbox:
-            line.draw()
+        pygame.draw.circle(screen,self.color,(self.x,self.y),self.r)
 
-    def calculate_pos(self):
-        alpha1 = math.pi - self.hoekpunthoek + self.hoek
-        alpha2 = self.hoekpunthoek + self.hoek
-        alpha3 = -self.hoekpunthoek + self.hoek
-        alpha4 = math.pi + self.hoekpunthoek + self.hoek
-        self.x1 = self.L * math.cos(alpha1) + self.centerx
-        self.y1 = -self.L * math.sin(alpha1) + self.centery
-        self.x2 = self.L * math.cos(alpha2) + self.centerx
-        self.y2 = -self.L * math.sin(alpha2) + self.centery
-        self.x3 = self.L * math.cos(alpha3) + self.centerx
-        self.y3 = -self.L * math.sin(alpha3) + self.centery
-        self.x4 = self.L * math.cos(alpha4) + self.centerx
-        self.y4 = -self.L * math.sin(alpha4) + self.centery
+    def left(self):
+        if self.x_a <= self.xthresh:
+            self.x_a = -self.drive
+    def right(self):
+        if self.x_a <= self.xthresh:
+            self.x_a = self.drive
 
-    def update(self, krachtenlijst):
-        '''
-        krijgt een lijst binnen van alle werkende krachten op auto en veranderd x,y,v,a,... volgens deze krachten
-        :param krachten: krachten lijst , zijnde Fz, Fgas, Frem, Fcoll, (Fvering)
-        :return: /
-        '''
+    def update(self):
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
-        self.x_a = 0
-        self.x_v += self.x_a
-        self.x_v *= 0.999
-        self.mapx += self.x_v
+        if self.y >= gety(self.mapx / 2 + self.x):
+            self.y = gety(self.mapx / 2 + self.x)
+        else:
+            self.y_a = 0.01
+            self.y_v += self.y_a
+            self.y_v *= 0.999
+            self.y += self.y_v
+            self.y_a = 0
 
-        self.y_a = 0
-        self.y_v += self.y_a
-        self.y_v *= 0.999
-        self.centery += self.y_v
-        self.calculate_pos()
+        self.x_v += self.x_a
+        self.x_v *= 0.99
+        self.mapx += self.x_v
+        self.x_a = 0
 
 ### ALGEMENE PARAMETERS ###
 # window setup
@@ -272,16 +243,20 @@ titelhoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
 main = True
 
+def gety(x):
+    return WINDOW_SIZE[1] / 2 + noise.valueAt(x * segments / WINDOW_SIZE[0] ) * WINDOW_SIZE[1] / 3
+
 ### GAME LOOP ###
 def game_loop():
     '''
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-    car = Car(WINDOW_SIZE[0]//2, -20, 100, 50, 5) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    car = Car(0, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
     left = False
     right = False
     running = True
+    t = 0
     while running:
         #scherm resetten
         screen.fill((255,255,255))
@@ -302,11 +277,6 @@ def game_loop():
                     left = False
                 if event.key == K_RIGHT:
                     right = False
-        # keyinputs handelen
-        if right:
-            pass
-        if left:
-            pass
         # Draw terrain
         for segment in road:
             # In en uitladen terrain
@@ -322,8 +292,18 @@ def game_loop():
                 new.draw(car.mapx)
                 road.append(new)
 
-        pygame.display.update()
+        # keyinputs handelen
+        if right:
+            car.right()
+        if left:
+            car.left()
 
+        car.update()
+        car.draw()
+        #pygame.draw.circle(screen,black,(WINDOW_SIZE[0]/2*sin(t)+WINDOW_SIZE[0]/2,gety(WINDOW_SIZE[0]/2*sin(t)+WINDOW_SIZE[0]/2)),10)
+
+        pygame.display.update()
+        t += 0.01
 ### UPGRADES LOOP ###
 def upgrades_loop():
     '''
