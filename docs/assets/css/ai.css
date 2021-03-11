@@ -7,7 +7,14 @@
 {
     text-align: center;
 }
-.title 
+
+.flex 
 {
-    background-image: url("/assets/images/Keyboard.jpg");
+    display: flex;
+    flex-direction: row;
+}
+.card-image 
+{
+    max-width: 200px;
+    max-height: 200px;
 }
