@@ -11,11 +11,13 @@ import pygame, sys, math, os, engine, random
 from pygame.locals import*
 pygame.init()
 clock = pygame.time.Clock()
-from math import sin
+from math import sin,cos
 #kleuren
 black = (0,0,0)
 white = (255,255,255)
 red = (255,0,0)
+ground = (255,255,0)
+lavakleur = (255,100,0)
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -31,23 +33,36 @@ def rot_center(image, angle, x, y):
     new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
     return rotated_image, new_rect
 
+scale = 0.03
+lavaheight = 600
 ### CLASSEN ###
+def drawground(road,color):
+    road.sort(key=lambda x: x.index,reverse= False)
+    group = []
+    for stuk in road:
+        group.append((stuk.beginx,stuk.beginy))
+        group.append((stuk.endx, stuk.endy))
+    group.append((WINDOW_SIZE[0],WINDOW_SIZE[1]))
+    group.append((0, WINDOW_SIZE[1]))
+    pygame.draw.polygon(screen,color,group)
+def drawlava():
+    pygame.draw.polygon(screen,lavakleur,((0,WINDOW_SIZE[1]),(0,lavaheight),(WINDOW_SIZE[0],lavaheight),(WINDOW_SIZE[0],WINDOW_SIZE[1])))
+
+
 class Roadsegment:
     def __init__(self,index, flat=False):
         self.index = index
         self.color = black
-        #FUNCTIE VOOR HOOGTE
-        if flat:
-            self.beginy = WINDOW_SIZE[1]-100
-            self.endy = WINDOW_SIZE[1]-100
-        else:
-            self.beginy = WINDOW_SIZE[1]/2 + noise.valueAt(index)*WINDOW_SIZE[1]/3
-            self.endy = WINDOW_SIZE[1]/2 + noise.valueAt(index+1)*WINDOW_SIZE[1]/3
+        self.beginy = gety((WINDOW_SIZE[0] / segments) * (self.index))
+        self.endy = gety((WINDOW_SIZE[0] / segments) * (self.index+1))
+        self.beginx = WINDOW_SIZE[0] / segments * (self.index)
+        self.endx = WINDOW_SIZE[0] / segments * (self.index + 1)
+
         self.width = 5
 
     def draw(self,mapx):
-        self.beginx = WINDOW_SIZE[0]/segments * (self.index - mapx/segments)
-        self.endx = WINDOW_SIZE[0]/segments * (self.index + 1 - mapx/segments)
+        self.beginx = WINDOW_SIZE[0]/segments * (self.index) - mapx
+        self.endx = WINDOW_SIZE[0]/segments * (self.index + 1) - mapx
         pygame.draw.line(screen,self.color,(self.beginx,self.beginy),(self.endx,self.endy),self.width)
 
 class Perlin:
@@ -92,6 +107,7 @@ class Perlin:
 
     def __lerp(self, start, stop, amt):
         return amt*(stop-start)+start
+
 
 class Line:
     def __init__(self,beginx,beginy,endx,endy):
@@ -166,29 +182,56 @@ class Car:
         self.r = r
         self.color = (0,0,255)
         self.mapx = 0
-        self.xthresh = 0.5
-        self.drive = 0.1
+        self.xthresh = 1.5
+        self.drive = 0.01
+        self.jumping = True
 
     def draw(self):
-        pygame.draw.circle(screen,self.color,(self.x,self.y),self.r)
+        angle = getnormal(self.mapx + self.x)
+        if self.y > gety(self.mapx+self.x) - 100:
+            x = self.x + cos(angle) * self.r
+            y = self.y - sin(angle) * self.r
+            x2 , y2 = (self.x + cos(angle) * self.r * 6,self.y - sin(angle) * self.r * 6)
+        else:
+            x = self.x
+            y = self.y
+            x2 , y2 = (x,y-self.r*6)
+
+        pygame.draw.line(screen,self.color,(self.x,self.y),(x2,y2),5)
+        pygame.draw.circle(screen,self.color,(x,y),self.r)
 
     def left(self):
-        if self.x_a <= self.xthresh:
+        if self.x_v > -self.xthresh:
             self.x_a = -self.drive
     def right(self):
-        if self.x_a <= self.xthresh:
+        if self.x_v < self.xthresh:
             self.x_a = self.drive
+    def jump(self):
+        if self.jumping == False:
+            self.y_v = -2
+            self.jumping = True
 
     def update(self):
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
-        if self.y >= gety(self.mapx / 2 + self.x):
-            self.y = gety(self.mapx / 2 + self.x)
-        else:
-            self.y_a = 0.01
-            self.y_v += self.y_a
-            self.y_v *= 0.999
-            self.y += self.y_v
-            self.y_a = 0
+
+        if getnormal(self.mapx + self.x) < math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
+            self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
+            self.x_v += cos(getnormal(self.mapx + self.x)) * 0.01
+
+        if getnormal(self.mapx + self.x) > math.pi/2 - math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
+            self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
+            self.x_v += cos(getnormal(self.mapx + self.x)) * 0.01
+
+        self.y_a = 0.01
+        self.y_v += self.y_a
+        self.y_v *= 0.999
+        self.y += self.y_v
+        self.y_a = 0
+
+        if self.y >= gety(self.mapx + self.x):
+            self.jumping = False
+            self.y = gety(self.mapx + self.x)
+
 
         self.x_v += self.x_a
         self.x_v *= 0.99
@@ -230,11 +273,23 @@ settings_button = engine.Button(screen,
                             width = WINDOW_SIZE[0]//3,
                             font_size=font_size,
                             transparant=True)
+
 #road initialiseren
 segments = 50
-noise = Perlin(500//segments) #frequentie terrain
+noise = Perlin(1000//segments) #frequentie terrain
 road = []
 i = 0
+
+#HOOGTEFUNCTIE
+def gety(x):
+    return WINDOW_SIZE[1] *2 / 3 + noise.valueAt(scale*x) * WINDOW_SIZE[1] / 3
+
+def getnormal(x):
+    y0 = gety(x)
+    y1 = gety(x+1)
+    hoek = math.atan2(y0-y1,1)
+    return hoek + math.pi/2
+
 for segment in range(segments):
     road.append(Roadsegment(i))
     i+=1
@@ -243,8 +298,6 @@ titelhoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
 main = True
 
-def gety(x):
-    return WINDOW_SIZE[1] / 2 + noise.valueAt(x * segments / WINDOW_SIZE[0] ) * WINDOW_SIZE[1] / 3
 
 ### GAME LOOP ###
 def game_loop():
@@ -252,10 +305,12 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-    car = Car(0, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    car = Car(WINDOW_SIZE[0]/2, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
     left = False
     right = False
     running = True
+    jump = False
+    jumping = False
     t = 0
     while running:
         #scherm resetten
@@ -272,12 +327,18 @@ def game_loop():
                     left = True
                 if event.key == K_RIGHT:
                     right = True
+                if event.key == K_UP:
+                    jump = True
             if event.type == KEYUP:
                 if event.key == K_LEFT:
                     left = False
                 if event.key == K_RIGHT:
                     right = False
+                if event.key == K_UP:
+                    jump = False
         # Draw terrain
+        drawlava()
+        drawground(road,ground)
         for segment in road:
             # In en uitladen terrain
             segment.draw(car.mapx)
@@ -297,13 +358,12 @@ def game_loop():
             car.right()
         if left:
             car.left()
+        if jump:
+            car.jump()
 
         car.update()
         car.draw()
-        #pygame.draw.circle(screen,black,(WINDOW_SIZE[0]/2*sin(t)+WINDOW_SIZE[0]/2,gety(WINDOW_SIZE[0]/2*sin(t)+WINDOW_SIZE[0]/2)),10)
-
         pygame.display.update()
-        t += 0.01
 ### UPGRADES LOOP ###
 def upgrades_loop():
     '''
