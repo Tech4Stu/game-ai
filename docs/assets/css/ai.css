@@ -20,22 +20,22 @@
 }
 .zoom
 {
-    transition: transform .2s; /* Animation */
+    transition: transform .2s !important; /* Animation */
 }
 .zoom-text{
-    visibility:hidden;
+    visibility:hidden !important;
 }
 .zoom:hover
 {
-    transform: scale(2);
-    position: relative;
-    z-index: 1;
+    transform: scale(2)  !important;
+    position: relative  !important;
+    z-index: 1  !important;
 }
 .zoom:hover .zoom-text
 {
-    visibility:visible;
+    visibility:visible  !important;
 }
 .uitleg-hover:hover 
 {
-    visibility: hidden;
+    visibility: hidden !important;
 }
