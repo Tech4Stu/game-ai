@@ -18,18 +18,21 @@
     max-width: 200px !important;
     max-height: 200px !important;
 }
-.zoom{
+.zoom
+{
     transition: transform .2s; /* Animation */
 }
 .zoom-text{
     visibility:hidden;
 }
-.zoom:hover{
+.zoom:hover
+{
     transform: scale(2);
     position: relative;
-        z-index: 1;
+    z-index: 1;
 }
-.zoom:hover .zoom-text{
+.zoom:hover .zoom-text
+{
     visibility:visible;
 }
 .uitleg-hover:hover 
