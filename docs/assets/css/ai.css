@@ -18,24 +18,3 @@
     max-width: 200px !important;
     max-height: 200px !important;
 }
-.zoom
-{
-    transition: transform .2s !important; /* Animation */
-}
-.zoom-text{
-    visibility:hidden !important;
-}
-.zoom:hover
-{
-    transform: scale(2)  !important;
-    position: relative  !important;
-    z-index: 1  !important;
-}
-.zoom:hover .zoom-text
-{
-    visibility:visible  !important;
-}
-.uitleg-hover:hover 
-{
-    visibility: hidden !important;
-}
