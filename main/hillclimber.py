@@ -56,7 +56,10 @@ def drawlava():
 
 #HOOGTEFUNCTIES
 def gety(x):
-    return WINDOW_SIZE[1] *2 / 3 + noise.valueAt(scale*x) * WINDOW_SIZE[1] / 3
+    if x < 500:
+        return WINDOW_SIZE[1] * 2 / 3 + noise.valueAt(scale * x + 100) * WINDOW_SIZE[1] / 3 - (500 * (1 - x/500))
+    else:
+        return WINDOW_SIZE[1] * 2 / 3 + noise.valueAt(scale * x + 100) * WINDOW_SIZE[1] / 3
 
 def getnormal(x):
     y0 = gety(x)
@@ -266,17 +269,19 @@ class Car:
         self.xthresh = 1.5
         self.drive = 0.01
         self.jumping = True
+        self.platform = False
 
     def draw(self):
-        if self.y > gety(self.mapx+self.x) - 100: #and self.platform == False:
-            angle = getnormal(self.mapx + self.x)
+        if self.y > gety(self.mapx+self.x) - 100 and self.platform != True:
+            angle = getnormal(self.mapx + self.x) - self.x_v/2
             x = self.x + cos(angle) * self.r
             y = self.y - sin(angle) * self.r
             x2 , y2 = (self.x + cos(angle) * self.r * 6,self.y - sin(angle) * self.r * 6)
         else:
+            angle = math.pi/2 - self.x_v/2
             x = self.x
             y = self.y
-            x2 , y2 = (x,y-self.r*6)
+            x2, y2 = (self.x + cos(angle) * self.r * 6, self.y - sin(angle) * self.r * 6)
 
         pygame.draw.line(screen,self.color,(self.x,self.y),(x2,y2),5)
         pygame.draw.circle(screen,self.color,(x,y),self.r)
@@ -295,8 +300,10 @@ class Car:
     def checkDeath(self):
         if self.y >= lavaheight:
             self.color = red
+            return True
         else:
             self.color = (0,0,255)
+            return False
 
     def update(self,lava):
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
@@ -315,22 +322,25 @@ class Car:
         self.y += self.y_v
         self.y_a = 0
 
-        self.platform = False
         if self.y >= gety(self.mapx + self.x):
-            self.platform = True
             self.jumping = False
             self.y = gety(self.mapx + self.x)
 
+
+        self.platform = False
         for platform in lava.platforms:
             if platform.x - platform.breedte/2 <= self.mapx + self.x <= platform.x + platform.breedte/2 and self.y >= lavaheight - 10:
                 self.y = lavaheight - 10
                 self.jumping = False
+                self.platform = True
 
 
         self.x_v += self.x_a
         self.x_v *= 0.99
         self.mapx += self.x_v
         self.x_a = 0
+        if self.mapx < 0:
+            self.mapx = 0
 
 ### ALGEMENE PARAMETERS ###
 # window setup
@@ -388,73 +398,77 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-    car = Car(WINDOW_SIZE[0]/2, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
-    lava = Lava()
-    left = False
-    right = False
+
     running = True
-    jump = False
-    jumping = False
-    t = 0
     while running:
-        #scherm resetten
-        screen.fill((255,255,255))
-        #events handelen
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-                if event.key == K_LEFT:
-                    left = True
-                if event.key == K_RIGHT:
-                    right = True
-                if event.key == K_UP:
-                    jump = True
-            if event.type == KEYUP:
-                if event.key == K_LEFT:
-                    left = False
-                if event.key == K_RIGHT:
-                    right = False
-                if event.key == K_UP:
-                    jump = False
-        # Draw terrain
-        drawlava()
-        lava.update(car)
-        lava.draw(car)
-        lava.generatePlatforms(car)
-        drawground(road,ground)
+        car = Car(WINDOW_SIZE[0]/4, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
+        lava = Lava()
+        left = False
+        right = False
+        jump = False
+        jumping = False
+        t = 0
+        while running:
+            #scherm resetten
+            screen.fill((255,255,255))
+            #events handelen
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        running = False
+                    if event.key == K_LEFT:
+                        left = True
+                    if event.key == K_RIGHT:
+                        right = True
+                    if event.key == K_UP:
+                        jump = True
+                if event.type == KEYUP:
+                    if event.key == K_LEFT:
+                        left = False
+                    if event.key == K_RIGHT:
+                        right = False
+                    if event.key == K_UP:
+                        jump = False
+            # Draw terrain
+            drawlava()
+            lava.update(car)
+            lava.draw(car)
+            lava.generatePlatforms(car)
+            drawground(road,ground)
 
-        for segment in road:
-            # In en uitladen terrain
-            segment.draw(car.mapx)
-            if segment.endx <= 0:
-                new = Roadsegment(segment.index + segments)
-                road.remove(segment)
-                road.append(new)
-                new.draw(car.mapx)
-            if segment.beginx >= WINDOW_SIZE[0]:
-                new = Roadsegment(segment.index - segments)
-                road.remove(segment)
-                new.draw(car.mapx)
-                road.append(new)
+            for segment in road:
+                # In en uitladen terrain
+                segment.draw(car.mapx)
+                if segment.endx <= 0:
+                    new = Roadsegment(segment.index + segments)
+                    road.remove(segment)
+                    road.append(new)
+                    new.draw(car.mapx)
+                if segment.beginx >= WINDOW_SIZE[0]:
+                    new = Roadsegment(segment.index - segments)
+                    road.remove(segment)
+                    new.draw(car.mapx)
+                    road.append(new)
 
-        # keyinputs handelen
-        if right:
-            car.right()
-        if left:
-            car.left()
-        if jump:
-            car.jump()
+            # keyinputs handelen
+            if right:
+                car.right()
+            if left:
+                car.left()
+            if jump:
+                car.jump()
 
-        car.update(lava)
-        car.draw()
-        car.checkDeath()
+            car.update(lava)
+            car.draw()
+            if (car.checkDeath()):
+                death_loop()
+                break
 
+            pygame.display.update()
 
-        pygame.display.update()
 ### UPGRADES LOOP ###
 def upgrades_loop():
     '''
@@ -474,7 +488,6 @@ def upgrades_loop():
                     running = False
         info_label.draw()
         pygame.display.update()
-
 ### SETTINGS LOOP ###
 def settings_loop():
     '''
@@ -494,6 +507,30 @@ def settings_loop():
                     running = False
         info_label.draw()
         pygame.display.update()
+
+def death_loop():
+    s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
+    s.set_alpha(3)
+    s.fill((255, 0, 0))
+    z = pygame.Surface((WINDOW_SIZE[0], WINDOW_SIZE[1]))
+    z.set_alpha(1)
+    z.fill((0, 0, 0))
+    bezig = True
+    i = 0
+    while bezig:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    bezig = False
+        if i <= 200:
+            screen.blit(s, (0, 0))
+        else:
+            screen.blit(z, (0,0))
+
+        i += 1
+
+        pygame.display.update()
+
 
 ### MAIN LOOP ###
 while main:
