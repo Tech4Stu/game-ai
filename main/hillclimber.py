@@ -18,6 +18,8 @@ white = (255,255,255)
 red = (255,0,0)
 ground = (255,255,0)
 lavakleur = (255,100,0)
+scale = 0.03
+lavaheight = 600
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -33,9 +35,6 @@ def rot_center(image, angle, x, y):
     new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
     return rotated_image, new_rect
 
-scale = 0.03
-lavaheight = 600
-### CLASSEN ###
 def drawground(road,color):
     road.sort(key=lambda x: x.index,reverse= False)
     group = []
@@ -45,9 +44,21 @@ def drawground(road,color):
     group.append((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     group.append((0, WINDOW_SIZE[1]))
     pygame.draw.polygon(screen,color,group)
+
 def drawlava():
     pygame.draw.polygon(screen,lavakleur,((0,WINDOW_SIZE[1]),(0,lavaheight),(WINDOW_SIZE[0],lavaheight),(WINDOW_SIZE[0],WINDOW_SIZE[1])))
 
+#HOOGTEFUNCTIES
+def gety(x):
+    return WINDOW_SIZE[1] *2 / 3 + noise.valueAt(scale*x) * WINDOW_SIZE[1] / 3
+
+def getnormal(x):
+    y0 = gety(x)
+    y1 = gety(x+1)
+    hoek = math.atan2(y0-y1,1)
+    return hoek + math.pi/2
+
+### CLASSEN ###
 
 class Roadsegment:
     def __init__(self,index, flat=False):
@@ -75,7 +86,6 @@ class Perlin:
         self.lowerBound = 0
         self.interval_size = 100 / (self.frequency-1)
         self.gradients = [random.uniform(-1, 1) for i in range(frequency)]
-
 
     def valueAt(self, t):
         if t < self.lowerBound:
@@ -107,7 +117,6 @@ class Perlin:
 
     def __lerp(self, start, stop, amt):
         return amt*(stop-start)+start
-
 
 class Line:
     def __init__(self,beginx,beginy,endx,endy):
@@ -280,16 +289,6 @@ noise = Perlin(1000//segments) #frequentie terrain
 road = []
 i = 0
 
-#HOOGTEFUNCTIE
-def gety(x):
-    return WINDOW_SIZE[1] *2 / 3 + noise.valueAt(scale*x) * WINDOW_SIZE[1] / 3
-
-def getnormal(x):
-    y0 = gety(x)
-    y1 = gety(x+1)
-    hoek = math.atan2(y0-y1,1)
-    return hoek + math.pi/2
-
 for segment in range(segments):
     road.append(Roadsegment(i))
     i+=1
@@ -297,7 +296,6 @@ for segment in range(segments):
 titelhoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
 main = True
-
 
 ### GAME LOOP ###
 def game_loop():
