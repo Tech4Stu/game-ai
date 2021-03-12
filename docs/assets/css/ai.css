@@ -2,6 +2,7 @@
 {
     border-color: white;
     margin: 1%;
+    transition: all .2s ease-in-out;
 }
 .center 
 {
@@ -17,4 +18,8 @@
 {
     max-width: 200px !important;
     max-height: 200px !important;
+}
+.card:hover 
+{
+    scale: (1.2);
 }
