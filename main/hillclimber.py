@@ -23,7 +23,7 @@ grass = (104, 184, 24)
 stone = (130, 126, 121)
 
 segments = 100
-scale = 0.03 * segments/50
+scale = 0.02 * segments/50
 lavaheight = 500
 
 
@@ -205,7 +205,7 @@ class Lava:
         self.pools = [(0,0)]
         self.color = lavakleur2
         self.width = 5
-        self.poolthresh = 200
+        self.poolthresh = 300
         self.platforms = []
 
     def update(self,car):
@@ -238,8 +238,10 @@ class Lava:
         self.platforms = []
 
         for pool in self.pools:
-            if pool[1]-pool[0] >= self.poolthresh:
-                self.platforms.append(Platform((pool[1]+pool[0])/2))
+            number = (pool[1] - pool[0]) // self.poolthresh
+            for i in range(number):
+                self.platforms.append(Platform((i+1)*(pool[1]-pool[0])/(number+1)+pool[0]))
+
 
         for platform in self.platforms:
             platform.draw(car)
