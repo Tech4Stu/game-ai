@@ -16,10 +16,16 @@ from math import sin,cos
 black = (0,0,0)
 white = (255,255,255)
 red = (255,0,0)
-ground = (255,255,0)
+ground = (135, 86, 16)
 lavakleur = (255,100,0)
-scale = 0.03
-lavaheight = 600
+lavakleur2 = (184, 23, 6)
+grass = (104, 184, 24)
+stone = (130, 126, 121)
+
+segments = 100
+scale = 0.03 * segments/50
+lavaheight = 500
+
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -60,18 +66,32 @@ def getnormal(x):
 
 ### CLASSEN ###
 
+class Platform:
+    def __init__(self,x):
+        self.x = x
+        self.breedte = 100
+        self.width = 10
+
+    def draw(self,car):
+        pygame.draw.line(screen,black,(self.x-self.breedte/2-car.mapx,lavaheight),(self.x+self.breedte/2-car.mapx,lavaheight),self.width)
+
 class Roadsegment:
     def __init__(self,index, flat=False):
         self.index = index
-        self.color = black
         self.beginy = gety((WINDOW_SIZE[0] / segments) * (self.index))
         self.endy = gety((WINDOW_SIZE[0] / segments) * (self.index+1))
         self.beginx = WINDOW_SIZE[0] / segments * (self.index)
         self.endx = WINDOW_SIZE[0] / segments * (self.index + 1)
 
-        self.width = 5
+        if self.beginy >= lavaheight or self.endy >= lavaheight:
+            self.color = stone
+        else:
+            self.color = grass
+
+        self.width = 10
 
     def draw(self,mapx):
+
         self.beginx = WINDOW_SIZE[0]/segments * (self.index) - mapx
         self.endx = WINDOW_SIZE[0]/segments * (self.index + 1) - mapx
         pygame.draw.line(screen,self.color,(self.beginx,self.beginy),(self.endx,self.endy),self.width)
@@ -180,6 +200,56 @@ class Line:
             pygame.draw.circle(screen, (0, 0, 255), (int(x), int(y)), 10)
             return (x,y)
 
+class Lava:
+    def __init__(self):
+        self.pools = [(0,0)]
+        self.color = lavakleur2
+        self.width = 5
+        self.poolthresh = 200
+        self.platforms = []
+
+    def update(self,car):
+        i = self.pools[len(self.pools)-1][1]
+        self.resolution = 10
+        while i <= WINDOW_SIZE[0] + car.mapx:
+            if gety(i) >= lavaheight:
+                beginx = i
+                j = i
+                while gety(j) >= lavaheight:
+                    j += self.resolution
+                endx = j
+                self.pools.append((beginx-self.resolution,endx+self.resolution))
+                i = j
+            i += self.resolution
+
+        for pool in self.pools:
+            if pool[1] <= car.mapx:
+                self.pools.remove(pool)
+
+        if len(self.pools) == 0:
+            self.pools = [(0,0)]
+
+        self.relativepools = []
+        for pool in self.pools:
+            self.relativepools.append((pool[0] - car.mapx, pool[1] - car.mapx))
+
+
+    def generatePlatforms(self,car):
+        self.platforms = []
+
+        for pool in self.pools:
+            if pool[1]-pool[0] >= self.poolthresh:
+                self.platforms.append(Platform((pool[1]+pool[0])/2))
+
+        for platform in self.platforms:
+            platform.draw(car)
+
+
+    def draw(self,car):
+
+        for line in self.relativepools:
+            pygame.draw.line(screen,self.color,(line[0],lavaheight),(line[1],lavaheight),self.width)
+
 class Car:
     def __init__(self, x, y, r):
         self.x = x
@@ -196,8 +266,8 @@ class Car:
         self.jumping = True
 
     def draw(self):
-        angle = getnormal(self.mapx + self.x)
-        if self.y > gety(self.mapx+self.x) - 100:
+        if self.y > gety(self.mapx+self.x) - 100: #and self.platform == False:
+            angle = getnormal(self.mapx + self.x)
             x = self.x + cos(angle) * self.r
             y = self.y - sin(angle) * self.r
             x2 , y2 = (self.x + cos(angle) * self.r * 6,self.y - sin(angle) * self.r * 6)
@@ -220,7 +290,13 @@ class Car:
             self.y_v = -2
             self.jumping = True
 
-    def update(self):
+    def checkDeath(self):
+        if self.y >= lavaheight:
+            self.color = red
+        else:
+            self.color = (0,0,255)
+
+    def update(self,lava):
         #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
 
         if getnormal(self.mapx + self.x) < math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
@@ -237,9 +313,16 @@ class Car:
         self.y += self.y_v
         self.y_a = 0
 
+        self.platform = False
         if self.y >= gety(self.mapx + self.x):
+            self.platform = True
             self.jumping = False
             self.y = gety(self.mapx + self.x)
+
+        for platform in lava.platforms:
+            if platform.x - platform.breedte/2 <= self.mapx + self.x <= platform.x + platform.breedte/2 and self.y >= lavaheight - 10:
+                self.y = lavaheight - 10
+                self.jumping = False
 
 
         self.x_v += self.x_a
@@ -284,7 +367,7 @@ settings_button = engine.Button(screen,
                             transparant=True)
 
 #road initialiseren
-segments = 50
+
 noise = Perlin(1000//segments) #frequentie terrain
 road = []
 i = 0
@@ -304,6 +387,7 @@ def game_loop():
     :return: /
     '''
     car = Car(WINDOW_SIZE[0]/2, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    lava = Lava()
     left = False
     right = False
     running = True
@@ -336,7 +420,11 @@ def game_loop():
                     jump = False
         # Draw terrain
         drawlava()
+        lava.update(car)
+        lava.draw(car)
+        lava.generatePlatforms(car)
         drawground(road,ground)
+
         for segment in road:
             # In en uitladen terrain
             segment.draw(car.mapx)
@@ -359,8 +447,11 @@ def game_loop():
         if jump:
             car.jump()
 
-        car.update()
+        car.update(lava)
         car.draw()
+        car.checkDeath()
+
+
         pygame.display.update()
 ### UPGRADES LOOP ###
 def upgrades_loop():
