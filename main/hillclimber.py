@@ -170,7 +170,7 @@ class Car:
         self.drive = 0.1
 
     def draw(self):
-        pygame.draw.circle(screen,self.color,(self.x,self.y),self.r)
+        pygame.draw.circle(screen,self.color,(int(self.x),int(self.y)),self.r)
 
     def left(self):
         if self.x_a <= self.xthresh:
@@ -252,7 +252,7 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-    car = Car(0, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    car = Car(100, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
     left = False
     right = False
     running = True
