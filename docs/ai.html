@@ -2,6 +2,7 @@
 layout: default
 title: AI
 custom_css: ai
+custom_js: ai
 ---
 <!--Extra css-->
 {% if page.custom_css %}
@@ -31,11 +32,18 @@ custom_css: ai
         <p class="card-text">Coming closer to the endgoal</p>
     </div>
 </div>
-<div class="card flex">
+<div class="card flex test">
     <img class="card-image" src="/assets/images/Pc.jpg" alt="Pc">
     <div class="card-body">
         <h5 class="card-title">The start of ai</h5>
         <p class="card-text">The ai has been started</p>
     </div>
 </div>
+
+<!--Extra js-->
+{% if page.custom_js %}
+{% for script in page.custom_js %}
+ <script src="{{ site.baseurl }}/assets/javascript/{{ script }}.js></script>
+{% endfor %}
+{% endif %}
 
