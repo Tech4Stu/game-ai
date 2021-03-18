@@ -3,8 +3,7 @@
 ###                                    CLASSEN
 ###                                    ALGEMENE PARAMETERS
 ###                                    GAME LOOP
-###                                    UPGRADES LOOP
-###                                    SETTINGS LOOP
+###                                    DEATH LOOP
 ###                                    MAIN LOOP
 ### IMPORTS ###
 import pygame, sys, math, os, engine, random
@@ -262,16 +261,17 @@ class Car:
         self.x_a = 0
         self.y = y
         self.y_v = 0
-        self.y_a = 0
+        self.y_a = 0.01
         self.r = r
         self.color = (0,0,255)
         self.mapx = 0
         self.xthresh = 1.5
-        self.drive = 0.01
+        self.drive = 0.05
         self.jumping = True
         self.platform = False
 
     def draw(self):
+        """
         if self.y > gety(self.mapx+self.x) - 100 and self.platform != True:
             angle = getnormal(self.mapx + self.x) - self.x_v/2
             x = self.x + cos(angle) * self.r
@@ -285,6 +285,8 @@ class Car:
 
         pygame.draw.line(screen,self.color,(self.x,self.y),(x2,y2),5)
         pygame.draw.circle(screen,self.color,(x,y),self.r)
+        """
+        screen.blit(player_img, (self.x-19, self.y-102))
 
     def left(self):
         if self.x_v > -self.xthresh:
@@ -306,7 +308,6 @@ class Car:
             return False
 
     def update(self,lava):
-        #somF = m*a -> x_a = Fx/m  // y_a = Fy/m
 
         if getnormal(self.mapx + self.x) < math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
             self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
@@ -316,16 +317,13 @@ class Car:
             self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
             self.x_v += cos(getnormal(self.mapx + self.x)) * 0.01
 
-        self.y_a = 0.01
         self.y_v += self.y_a
         self.y_v *= 0.999
         self.y += self.y_v
-        self.y_a = 0
 
         if self.y >= gety(self.mapx + self.x):
             self.jumping = False
             self.y = gety(self.mapx + self.x)
-
 
         self.platform = False
         for platform in lava.platforms:
@@ -333,7 +331,6 @@ class Car:
                 self.y = lavaheight - 10
                 self.jumping = False
                 self.platform = True
-
 
         self.x_v += self.x_a
         self.x_v *= 0.99
@@ -355,6 +352,9 @@ logo_img = pygame.transform.scale(logo_img, (50,50)) # x5
 titel_img = pygame.image.load("images\hillclimber_logo.png").convert()
 titel_img.set_colorkey((255,255,255))
 titel_img = pygame.transform.scale(titel_img, (839, 146)) # x1.5
+player_img = pygame.image.load("images\playerV2.png").convert()
+player_img.set_colorkey((255,255,255))
+player_img = pygame.transform.scale(player_img, (38, 102))
 # knoppen
 font_size = 90
 spacing = 30
@@ -365,19 +365,6 @@ play_button = engine.Button(screen,
                             width = WINDOW_SIZE[0]//6,
                             font_size=font_size,
                             transparant=True)
-upgrade_button = engine.Button(screen,
-                            (play_button.pos[0]+play_button.width+spacing, WINDOW_SIZE[1]-button_height),
-                            "UPGRADES",
-                            width = WINDOW_SIZE[0]//3,
-                            font_size=font_size,
-                            transparant=True)
-settings_button = engine.Button(screen,
-                            (upgrade_button.pos[0]+upgrade_button.width+spacing, WINDOW_SIZE[1]-button_height),
-                            "SETTINGS",
-                            width = WINDOW_SIZE[0]//3,
-                            font_size=font_size,
-                            transparant=True)
-
 #road initialiseren
 
 noise = Perlin(1000//segments) #frequentie terrain
@@ -401,7 +388,7 @@ def game_loop():
 
     running = True
     while running:
-        car = Car(WINDOW_SIZE[0]/4, -20, 10) #gwn nog zodat game menu werkt, moet nog veranderd worden
+        car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
         lava = Lava()
         left = False
         right = False
@@ -463,51 +450,12 @@ def game_loop():
 
             car.update(lava)
             car.draw()
-            if (car.checkDeath()):
+            if car.checkDeath():
+                running = False
                 death_loop()
-                break
-
             pygame.display.update()
 
-### UPGRADES LOOP ###
-def upgrades_loop():
-    '''
-    deze loop is het menu waar we upgrades zouden kunnen kopen
-    :return: /
-    '''
-    running = True
-    info_label = engine.Label(screen, (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]/2), "HIER KOMT UPGRADE MENU", side = "center")
-    while running:
-        screen.fill((0,0,0))
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-        info_label.draw()
-        pygame.display.update()
-### SETTINGS LOOP ###
-def settings_loop():
-    '''
-    deze loop is een menu voor potentiele instellingen(geluid aan uit)
-    :return: /
-    '''
-    running = True
-    info_label = engine.Label(screen, (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]/2), "HIER KOMT SETTINGS", side = "center")
-    while running:
-        screen.fill((0,0,0))
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-        info_label.draw()
-        pygame.display.update()
-
+### DEATH LOOP ###
 def death_loop():
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
@@ -515,22 +463,42 @@ def death_loop():
     z = pygame.Surface((WINDOW_SIZE[0], WINDOW_SIZE[1]))
     z.set_alpha(1)
     z.fill((0, 0, 0))
-    bezig = True
+    esc_button = engine.Button(screen, (30, 30),
+                                "HOME",
+                                width=WINDOW_SIZE[0] // 5,
+                                font_size=font_size)
+    restart_button = engine.Button(screen, (WINDOW_SIZE[0]/2-WINDOW_SIZE[0]//6, WINDOW_SIZE[1]/2),
+                               "RESTART",
+                               width=WINDOW_SIZE[0] // 3,
+                               font_size=font_size,
+                               txt_clr = (255,255,255))
+
+    running = True
     i = 0
-    while bezig:
+    while running:
         for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    bezig = False
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if esc_button.pressed():
+                    running = False
+                if restart_button.pressed():
+                    running = False
+                    game_loop()
+
         if i <= 200:
             screen.blit(s, (0, 0))
+            i += 1
         else:
             screen.blit(z, (0,0))
-
-        i += 1
+            esc_button.draw()
+            restart_button.draw()
 
         pygame.display.update()
-
 
 ### MAIN LOOP ###
 while main:
@@ -542,14 +510,8 @@ while main:
         if event.type == MOUSEBUTTONDOWN:
             if play_button.pressed():
                 game_loop()
-            if upgrade_button.pressed():
-                upgrades_loop()
-            if settings_button.pressed():
-                settings_loop()
 
     play_button.draw()
-    upgrade_button.draw()
-    settings_button.draw()
     rotated_titel = rot_center(titel_img, titelhoek, WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 - WINDOW_SIZE[1]//8)
     screen.blit(rotated_titel[0], rotated_titel[1])
     screen.blit(logo_img, (WINDOW_SIZE[0]-logo_img.get_height()*1.1, WINDOW_SIZE[1]-logo_img.get_width()*1.1))
