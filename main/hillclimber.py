@@ -72,7 +72,7 @@ class Platform:
     def __init__(self,x):
         self.x = x
         self.breedte = 100
-        self.width = 10
+        self.width = 15
 
     def draw(self,car):
         pygame.draw.line(screen,black,(self.x-self.breedte/2-car.mapx,lavaheight),(self.x+self.breedte/2-car.mapx,lavaheight),self.width)
@@ -207,7 +207,7 @@ class Lava:
         self.pools = [(0,0)]
         self.color = lavakleur2
         self.width = 5
-        self.poolthresh = 300
+        self.poolthresh = 300   #aantal platformen groter is minder
         self.platforms = []
 
     def update(self,car):
@@ -256,17 +256,17 @@ class Lava:
 
 class Car:
     def __init__(self, x, y, r):
-        self.x = x
+        self.x = x  #pos op scherm
         self.x_v = 0
         self.x_a = 0
-        self.y = y
+        self.y = y  #pos op scherm
         self.y_v = 0
-        self.y_a = 0.01
+        self.y_a = 0.05  #Fz
         self.r = r
         self.color = (0,0,255)
-        self.mapx = 0
-        self.xthresh = 1.5
-        self.drive = 0.05
+        self.mapx = 0   #
+        self.xthresh = 1.5 #max snelheid
+        self.drive = 0.08 #versnelling x
         self.jumping = True
         self.platform = False
 
@@ -296,7 +296,7 @@ class Car:
             self.x_a = self.drive
     def jump(self):
         if self.jumping == False:
-            self.y_v = -2
+            self.y_v = -(self.y_a*100)
             self.jumping = True
 
     def checkDeath(self):
@@ -308,11 +308,10 @@ class Car:
             return False
 
     def update(self,lava):
-
+        #het slieren op een helling
         if getnormal(self.mapx + self.x) < math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
             self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
             self.x_v += cos(getnormal(self.mapx + self.x)) * 0.01
-
         if getnormal(self.mapx + self.x) > math.pi/2 - math.pi/6 and self.y >= gety(self.mapx+self.x) - 10:
             self.y_v -= sin(getnormal(self.mapx + self.x)) * 0.01
             self.x_v += cos(getnormal(self.mapx + self.x)) * 0.01
@@ -327,11 +326,10 @@ class Car:
 
         self.platform = False
         for platform in lava.platforms:
-            if platform.x - platform.breedte/2 <= self.mapx + self.x <= platform.x + platform.breedte/2 and self.y >= lavaheight - 10:
-                self.y = lavaheight - 10
+            if platform.x - platform.breedte/2 <= self.mapx + self.x <= platform.x + platform.breedte/2 and self.y >= lavaheight - 5:
+                self.y = lavaheight - 5
                 self.jumping = False
                 self.platform = True
-
         self.x_v += self.x_a
         self.x_v *= 0.99
         self.mapx += self.x_v
@@ -454,6 +452,7 @@ def game_loop():
                 running = False
                 death_loop()
             pygame.display.update()
+            print(clock.get_fps())
 
 ### DEATH LOOP ###
 def death_loop():
