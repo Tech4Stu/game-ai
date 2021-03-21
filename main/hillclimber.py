@@ -271,38 +271,21 @@ class Car:
 
     def draw(self):
         """
-        if self.y > gety(self.mapx+self.x) - 100 and self.platform != True:
-            angle = getnormal(self.mapx + self.x) - self.x_v/2
-            x = self.x + cos(angle) * self.r
-            y = self.y - sin(angle) * self.r
-            x2 , y2 = (self.x + cos(angle) * self.r * 6,self.y - sin(angle) * self.r * 6)
-        else:
-            angle = math.pi/2 - self.x_v/2
-            x = self.x
-            y = self.y
-            x2, y2 = (self.x + cos(angle) * self.r * 6, self.y - sin(angle) * self.r * 6)
-
-        pygame.draw.line(screen,self.color,(self.x,self.y),(x2,y2),5)
-        pygame.draw.circle(screen,self.color,(x,y),self.r)
+        start offset voor rechte foto naar hoek is x= -19, y = -102
+        dan moet new_x worden afgetrokken en new_y worden optgeteld
+        :return: /
         """
-        #start offset voor rechte foto naar hoek is x= -19, y = -102
-        #dan moet new_x worden afgetrokken en new_y worden optgeteld
-        L = 51
-        a = 20
-        b = (180-a)/2
-        c = 90 -b
-        new_x = L*sin(a)
-        new_y = new_x*tan(c)
-        if self.x_v != self.xthresh/2:
-            a = rot_center(player_img, -20, self.x, self.y-51)
-            pygame.draw.rect(screen, (0,0,100), a[1])
-            screen.blit(a[0], a[1])
-            pygame.draw.circle(screen, (200, 0, 0), (self.x-19-new_x, self.y-120-new_y), 2)
-        else:
-            screen.blit(player_img, (self.x-19, self.y-102))
-        pygame.draw.circle(screen, (0,200,0), (self.x, self.y), 2)
-        pygame.draw.circle(screen, (0, 0, 200), (self.x-19, self.y-102), 2)
-
+        L = 51  # lengte van halve player rechtstaand in pixels
+        a = math.ceil(self.x_v*10)  # hoek van player (recthstaand is 0° volledig vooruit is -40°)
+        if a > self.xthresh*10: # voor de twitch van max en min te vermijden want snelheid kan soms net boven treshhold gaan.
+            a = self.xthresh*10
+        b = (180-a)/2   # zijn de twee tegenoverstaande hoeken in een gelijkbenige driehoek met a zijnde de derde hoek en beenlengte is L
+        c = 90 -b   # is complementaire hoek van b?
+        new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
+        new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
+        rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
+        #pygame.draw.rect(screen, (0,0,100), a[1])  #hitbox van gedraaide foto
+        screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
             self.x_a = -self.drive
