@@ -29,8 +29,10 @@ class Label:
         if not self.height:
             self.height = self.font.size(self.txt)[1]
         self.rect       = pygame.Rect(self.pos[0], self.pos[1], self.width, self.height)
+        print(self.rect)
         if self.side == "center":
             self.rect.centerx = self.pos[0]
+        print(self.rect)
         if self.side == 'right':
             self.rect.right = self.pos[0]+self.rect.width
 
@@ -38,7 +40,7 @@ class Label:
         if surf == None:
             surf = self.surface
         if pos == None:
-            pos = self.pos
+            pos = (self.rect[0], self.rect[1])
         if not self.transparant:
             pygame.draw.rect(surf, self.bg_clr, (pos[0], pos[1], self.rect.width, self.rect.height))
         if self.border:

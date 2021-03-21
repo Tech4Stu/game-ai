@@ -10,7 +10,7 @@ import pygame, sys, math, os, engine, random
 from pygame.locals import*
 pygame.init()
 clock = pygame.time.Clock()
-from math import sin,cos
+from math import sin,cos,tan
 #kleuren
 black = (0,0,0)
 white = (255,255,255)
@@ -20,11 +20,9 @@ lavakleur = (255,100,0)
 lavakleur2 = (184, 23, 6)
 grass = (104, 184, 24)
 stone = (130, 126, 121)
-
 segments = 100
 scale = 0.02 * segments/50
 lavaheight = 500
-
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -262,10 +260,11 @@ class Car:
         self.y = y  #pos op scherm
         self.y_v = 0
         self.y_a = 0.05  #Fz
+        self.sprong = 2
         self.r = r
         self.color = (0,0,255)
         self.mapx = 0   #
-        self.xthresh = 1.5 #max snelheid
+        self.xthresh = 4 #max snelheid
         self.drive = 0.08 #versnelling x
         self.jumping = True
         self.platform = False
@@ -286,7 +285,23 @@ class Car:
         pygame.draw.line(screen,self.color,(self.x,self.y),(x2,y2),5)
         pygame.draw.circle(screen,self.color,(x,y),self.r)
         """
-        screen.blit(player_img, (self.x-19, self.y-102))
+        #start offset voor rechte foto naar hoek is x= -19, y = -102
+        #dan moet new_x worden afgetrokken en new_y worden optgeteld
+        L = 51
+        a = 20
+        b = (180-a)/2
+        c = 90 -b
+        new_x = L*sin(a)
+        new_y = new_x*tan(c)
+        if self.x_v != self.xthresh/2:
+            a = rot_center(player_img, -20, self.x, self.y-51)
+            pygame.draw.rect(screen, (0,0,100), a[1])
+            screen.blit(a[0], a[1])
+            pygame.draw.circle(screen, (200, 0, 0), (self.x-19-new_x, self.y-120-new_y), 2)
+        else:
+            screen.blit(player_img, (self.x-19, self.y-102))
+        pygame.draw.circle(screen, (0,200,0), (self.x, self.y), 2)
+        pygame.draw.circle(screen, (0, 0, 200), (self.x-19, self.y-102), 2)
 
     def left(self):
         if self.x_v > -self.xthresh:
@@ -296,7 +311,7 @@ class Car:
             self.x_a = self.drive
     def jump(self):
         if self.jumping == False:
-            self.y_v = -(self.y_a*100)
+            self.y_v = -self.sprong
             self.jumping = True
 
     def checkDeath(self):
@@ -383,79 +398,80 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
-
     running = True
+    score = 0
+    score_label = engine.Label(screen, (40, 20), "Score: 0", txt_clr = (0,0,0), transparant=True)
+    car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    lava = Lava()
+    left = False
+    right = False
+    jump = False
+    jumping = False
+    t = 0
     while running:
-        car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
-        lava = Lava()
-        left = False
-        right = False
-        jump = False
-        jumping = False
-        t = 0
-        while running:
-            #scherm resetten
-            screen.fill((255,255,255))
-            #events handelen
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False
-                    if event.key == K_LEFT:
-                        left = True
-                    if event.key == K_RIGHT:
-                        right = True
-                    if event.key == K_UP:
-                        jump = True
-                if event.type == KEYUP:
-                    if event.key == K_LEFT:
-                        left = False
-                    if event.key == K_RIGHT:
-                        right = False
-                    if event.key == K_UP:
-                        jump = False
-            # Draw terrain
-            drawlava()
-            lava.update(car)
-            lava.draw(car)
-            lava.generatePlatforms(car)
-            drawground(road,ground)
-
-            for segment in road:
-                # In en uitladen terrain
-                segment.draw(car.mapx)
-                if segment.endx <= 0:
-                    new = Roadsegment(segment.index + segments)
-                    road.remove(segment)
-                    road.append(new)
-                    new.draw(car.mapx)
-                if segment.beginx >= WINDOW_SIZE[0]:
-                    new = Roadsegment(segment.index - segments)
-                    road.remove(segment)
-                    new.draw(car.mapx)
-                    road.append(new)
-
-            # keyinputs handelen
-            if right:
-                car.right()
-            if left:
-                car.left()
-            if jump:
-                car.jump()
-
-            car.update(lava)
-            car.draw()
-            if car.checkDeath():
-                running = False
-                death_loop()
-            pygame.display.update()
-            print(clock.get_fps())
+        #scherm resetten
+        screen.fill((255,255,255))
+        #events handelen
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+                if event.key == K_LEFT:
+                    left = True
+                if event.key == K_RIGHT:
+                    right = True
+                if event.key == K_UP:
+                    jump = True
+            if event.type == KEYUP:
+                if event.key == K_LEFT:
+                    left = False
+                if event.key == K_RIGHT:
+                    right = False
+                if event.key == K_UP:
+                    jump = False
+        # Draw terrain
+        drawlava()
+        lava.update(car)
+        lava.draw(car)
+        lava.generatePlatforms(car)
+        drawground(road,ground)
+        for segment in road:
+            # In en uitladen terrain
+            segment.draw(car.mapx)
+            if segment.endx <= 0:
+                new = Roadsegment(segment.index + segments)
+                road.remove(segment)
+                road.append(new)
+                new.draw(car.mapx)
+            if segment.beginx >= WINDOW_SIZE[0]:
+                new = Roadsegment(segment.index - segments)
+                road.remove(segment)
+                new.draw(car.mapx)
+                road.append(new)
+        # keyinputs handelen
+        if right:
+            car.right()
+        if left:
+            car.left()
+        if jump:
+            car.jump()
+        car.update(lava)
+        car.draw()
+        if car.checkDeath():
+            running = False
+            death_loop(int(score//10))
+        # score
+        if car.mapx > score:
+            score = car.mapx
+            score_label.txt = f"SCORE: {int(score // 10)}"
+        score_label.draw()
+        pygame.display.update()
 
 ### DEATH LOOP ###
-def death_loop():
+def death_loop(score):
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
     s.fill((255, 0, 0))
@@ -471,7 +487,12 @@ def death_loop():
                                width=WINDOW_SIZE[0] // 3,
                                font_size=font_size,
                                txt_clr = (255,255,255))
-
+    score_label = engine.Label(screen, (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 - restart_button.height),
+                               f"SCORE: {score}",
+                               side = "center",
+                               font_size=font_size,
+                               txt_clr=(255,255,255))
+    print(score_label.side)
     running = True
     i = 0
     while running:
@@ -494,6 +515,7 @@ def death_loop():
             i += 1
         else:
             screen.blit(z, (0,0))
+            score_label.draw()
             esc_button.draw()
             restart_button.draw()
 
