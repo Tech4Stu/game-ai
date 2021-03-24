@@ -279,14 +279,17 @@ class Car:
         """
         L = 51  # lengte van halve player rechtstaand in pixels
         a = math.ceil(self.x_v*10)  # hoek van player (recthstaand is 0° volledig vooruit is -40°)
+
         if a > self.xthresh*10: # voor de twitch van max en min te vermijden want snelheid kan soms net boven treshhold gaan.
             a = self.xthresh*10
+        elif a < -self.xthresh*10+1:
+            a = -self.xthresh*10+1
         b = (180-a)/2   # zijn de twee tegenoverstaande hoeken in een gelijkbenige driehoek met a zijnde de derde hoek en beenlengte is L
         c = 90 -b   # is complementaire hoek van b?
         new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
         new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        #pygame.draw.rect(screen, (0,0,100), a[1])  #hitbox van gedraaide foto
+        #pygame.draw.rect(screen, (0,0,100), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
