@@ -7,6 +7,8 @@
 ###                                    SETTINGS LOOP
 ###                                    MAIN LOOP
 ### IMPORTS ###
+import time
+
 import pygame, sys, math, os, engine, random
 from pygame.locals import*
 pygame.init()
@@ -342,6 +344,18 @@ class Car:
         if self.mapx < 0:
             self.mapx = 0
 
+#class munten
+class munten:
+
+    def muntTest(x, y):
+        start_time = time.strftime("%S")
+        #wanneer het aantal seconden gedeeld zijn door 3 geen rest oplevert dan tekenen we een munt.
+        if(int(start_time)%3==0):
+            x = x + int(time.strftime("%M"))
+            y = y + (int(time.strftime("%S"))*2)
+            screen.blit(munten_img,(x, y))
+
+
 ### ALGEMENE PARAMETERS ###
 # window setup
 pygame.display.set_caption("T4S Game")  # titel venster
@@ -355,6 +369,10 @@ logo_img = pygame.transform.scale(logo_img, (50,50)) # x5
 titel_img = pygame.image.load("images\hillclimber_logo.png").convert()
 titel_img.set_colorkey((255,255,255))
 titel_img = pygame.transform.scale(titel_img, (839, 146)) # x1.5
+#foto munten
+munten_img = pygame.image.load("images/munt2.png").convert()
+munten_img.set_colorkey((255,255,255))
+munten_img = pygame.transform.scale(munten_img,(29,30))
 # knoppen
 font_size = 90
 spacing = 30
@@ -466,8 +484,13 @@ def game_loop():
             if (car.checkDeath()):
                 death_loop()
                 break
-
+            #t = Timer(5,munten.muntTest(750,200),args=None, kwargs=None)
+            #t.start()
+            munten.muntTest(750,200)
             pygame.display.update()
+
+
+
 
 ### UPGRADES LOOP ###
 def upgrades_loop():
