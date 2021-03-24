@@ -97,22 +97,3 @@ html[data-theme="dark"] {
 .jumbo-text{
 	color: #fff !important;
 }
-
-/* Home */
-.skew-container-right{
-	transform: skewY(-5deg);
-	overflow: hidden;
-}
-
-.skew-image-right{
-	transform: skewY(5deg);
-}
-
-.skew-container-left{
-	transform: skewY(5deg);
-	overflow: hidden;
-}
-
-.skew-image-left{
-	transform: skewY(-5deg);
-}
