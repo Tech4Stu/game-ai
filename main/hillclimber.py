@@ -344,6 +344,7 @@ class munten:
     def muntTest(x, y):
         start_time = time.strftime("%S")
         #wanneer het aantal seconden gedeeld zijn door 3 geen rest oplevert dan tekenen we een munt.
+        #x en y zijn de coordinaten
         if(int(start_time)%3==0):
             x = x + int(time.strftime("%M"))
             y = y + (int(time.strftime("%S"))*2)
