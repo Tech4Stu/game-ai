@@ -207,8 +207,9 @@ class Lava:
         self.pools = [(0,0)]
         self.color = lavakleur2
         self.width = 5
-        self.poolthresh = 300   #aantal platformen groter is minder
+        self.poolthresh = 300   #min afstand voor platform
         self.platforms = []
+        self.difframp = 300 #difficulty ramp (hoe snel moeilijker worden)
 
     def update(self,car):
         i = self.pools[len(self.pools)-1][1]
@@ -220,7 +221,7 @@ class Lava:
                 while gety(j) >= lavaheight:
                     j += self.resolution
                 endx = j
-                self.pools.append((beginx-self.resolution,endx+self.resolution))
+                self.pools.append((beginx-self.resolution,endx+self.resolution,self.poolthresh))
                 i = j
             i += self.resolution
 
@@ -229,18 +230,21 @@ class Lava:
                 self.pools.remove(pool)
 
         if len(self.pools) == 0:
-            self.pools = [(0,0)]
+            self.pools = [(0,0,1)]
 
         self.relativepools = []
         for pool in self.pools:
             self.relativepools.append((pool[0] - car.mapx, pool[1] - car.mapx))
+
+        self.poolthresh = int(car.mapx / self.difframp  + 300)
+        print(self.poolthresh)
 
 
     def generatePlatforms(self,car):
         self.platforms = []
 
         for pool in self.pools:
-            number = (pool[1] - pool[0]) // self.poolthresh
+            number = (pool[1] - pool[0]) // pool[2]
             for i in range(number):
                 self.platforms.append(Platform((i+1)*(pool[1]-pool[0])/(number+1)+pool[0]))
 
@@ -261,13 +265,13 @@ class Car:
         self.x_a = 0
         self.y = y  #pos op scherm
         self.y_v = 0
-        self.y_a = 0.05  #Fz
+        self.y_a = 0.02  #Fz
         self.sprong = 2
         self.r = r
         self.color = (0,0,255)
         self.mapx = 0   #
-        self.xthresh = 4 #max snelheid
-        self.drive = 0.08 #versnelling x
+        self.xthresh = 3 #max snelheid
+        self.drive = 0.04 #versnelling x
         self.jumping = True
         self.platform = False
 
@@ -323,10 +327,14 @@ class Car:
         self.y_v *= 0.999
         self.y += self.y_v
 
+        #op de grond?
         if self.y >= gety(self.mapx + self.x):
             self.jumping = False
             self.y = gety(self.mapx + self.x)
+        else:
+            self.jumping = True
 
+        #op een platform?
         self.platform = False
         for platform in lava.platforms:
             if platform.x - platform.breedte/2 <= self.mapx + self.x <= platform.x + platform.breedte/2 and self.y >= lavaheight - 5:
@@ -339,7 +347,6 @@ class Car:
         self.x_a = 0
         if self.mapx < 0:
             self.mapx = 0
-
 
 #class munten
 class munten:
