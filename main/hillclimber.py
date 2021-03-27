@@ -289,7 +289,7 @@ class Car:
         new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
         new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        pygame.draw.rect(screen, (0,0,100), rot_player[1])  #hitbox van gedraaide foto
+        test = pygame.draw.rect(screen, (255,255,255), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
@@ -342,16 +342,20 @@ class Car:
 
 
 #class munten
-class munten:
+class Munten:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.gepakt = False #weten wanneer er een munt is genomen
+        self.rect = pygame.Rect(self.x,self.y,20,20) # 20 op 20 is formaat van de munt
+        self.kleur = (100,100,0)
 
-    def muntTest(x, y):
-        start_time = time.strftime("%S")
-        #wanneer het aantal seconden gedeeld zijn door 3 geen rest oplevert dan tekenen we een munt.
-        #x en y zijn de coordinaten
-        if(int(start_time)%3==0):
-            x = x + int(time.strftime("%M"))
-            y = y + (int(time.strftime("%S"))*2)
-            screen.blit(munten_img,(x, y))
+    def tekenenMunten(self,surface):
+        #teken de munt op het scherm
+        pygame.draw.rect(surface,(255,255,255),self.rect)
+        screen.blit(munten_img, (self.x,self.y))
+
+
 
 def munttekenen(x):
     screen.blit(munten_img, (x, 100))
@@ -377,7 +381,7 @@ player_img = pygame.transform.scale(player_img, (38, 102))
 #foto munten
 munten_img = pygame.image.load("images/munt2.png").convert()
 munten_img.set_colorkey((255,255,255))
-munten_img = pygame.transform.scale(munten_img,(29,30))
+munten_img = pygame.transform.scale(munten_img,(20,20))
 # knoppen
 font_size = 90
 spacing = 30
@@ -479,9 +483,14 @@ def game_loop():
             score_label.txt = f"SCORE: {int(score // 10)}"
         score_label.draw()
 
-        #munten aanspreken
-        # munten.muntTest(750, 200)
-        munttekenen(int(car.mapx))
+        #in start_time stoppen we enkel de seconden van de tijd
+        start_time = time.strftime("%S")
+
+        #munten aanspreken om de 3 seconden
+        if (int(start_time) % 3 == 0):
+            munt = Munten(int(car.mapx),int(lavaheight))
+            munt.tekenenMunten(screen)
+            #munttekenen(int(car.mapx))
         pygame.display.update()
 
 ### DEATH LOOP ###
