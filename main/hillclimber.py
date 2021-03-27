@@ -407,7 +407,7 @@ def game_loop():
     '''
     running = True
     score = 0
-    score_label = engine.Label(screen, (40, 20), "Score: 0", txt_clr = (0,0,0), transparant=True)
+    score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
     car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
     lava = Lava()
     left = False
