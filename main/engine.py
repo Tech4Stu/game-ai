@@ -1,15 +1,20 @@
 import pygame, os, sys
 from pygame.locals import*
 
-def text_on_button(surface, txt, rect, font, color=(255, 255, 255)):
-    x = rect.x + rect.width / 2 - font.size(txt)[0] / 2
+def text_on_button(surface, txt, rect, font, color=(255, 255, 255), side="center"):
+    if side == "center":
+        x = rect.x + rect.width / 2 - font.size(txt)[0] / 2
+    elif side == "left":
+        x = rect.x
+    else:
+        x = rect.x + rect.width - font.size(txt)[0]
     y = rect.y + rect.height / 2 - font.size(txt)[1] / 2
     surface.blit(font.render(txt, True, color), (x, y))
 
 class Label:
     # a Rect being drawn
     def __init__(self, surface, pos, txt, bg_clr=(0,0,0), txt_clr=(255,255,255), border=None, border_clr=(255,255,255),
-               font="arial", font_size=36, width=None, height=None, side="left", picture=None, transparant=False):
+               font="arial", font_size=36, width=None, height=None, side="left", txt_side="center", picture=None, transparant=False):
         self.surface    = surface
         self.pos        = pos
         self.txt        = txt
@@ -21,6 +26,7 @@ class Label:
         self.width      = width
         self.height     = height
         self.side       = side
+        self.txt_side   = txt_side
         self.picture    = picture
         self.transparant= transparant
 
@@ -46,7 +52,7 @@ class Label:
         if self.border:
             pygame.draw.rect(surf, self.border_clr, (pos[0], pos[1], self.rect.width, self.rect.height), 2)
         if not self.picture:
-            text_on_button(surf, self.txt, pygame.Rect(pos[0], pos[1], self.rect.width, self.rect.height), self.font, self.txt_clr)
+            text_on_button(surf, self.txt, pygame.Rect(pos[0], pos[1], self.rect.width, self.rect.height), self.font, self.txt_clr, side=self.txt_side)
         else:
             self.picture = pygame.transform.scale(self.picture, (32, 32))
             surf.blit(self.picture, (
