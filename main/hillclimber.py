@@ -279,14 +279,17 @@ class Car:
         """
         L = 51  # lengte van halve player rechtstaand in pixels
         a = math.ceil(self.x_v*10)  # hoek van player (recthstaand is 0° volledig vooruit is -40°)
+
         if a > self.xthresh*10: # voor de twitch van max en min te vermijden want snelheid kan soms net boven treshhold gaan.
             a = self.xthresh*10
+        elif a < -self.xthresh*10+1:
+            a = -self.xthresh*10+1
         b = (180-a)/2   # zijn de twee tegenoverstaande hoeken in een gelijkbenige driehoek met a zijnde de derde hoek en beenlengte is L
         c = 90 -b   # is complementaire hoek van b?
         new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
         new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        #pygame.draw.rect(screen, (0,0,100), a[1])  #hitbox van gedraaide foto
+        pygame.draw.rect(screen, (0,0,100), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
@@ -350,6 +353,9 @@ class munten:
             y = y + (int(time.strftime("%S"))*2)
             screen.blit(munten_img,(x, y))
 
+def munttekenen(x):
+    screen.blit(munten_img, (x, 100))
+
 
 
 ### ALGEMENE PARAMETERS ###
@@ -404,7 +410,7 @@ def game_loop():
     '''
     running = True
     score = 0
-    score_label = engine.Label(screen, (40, 20), "Score: 0", txt_clr = (0,0,0), transparant=True)
+    score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
     car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
     lava = Lava()
     left = False
@@ -474,7 +480,8 @@ def game_loop():
         score_label.draw()
 
         #munten aanspreken
-        munten.muntTest(750, 200)
+        # munten.muntTest(750, 200)
+        munttekenen(int(car.mapx))
         pygame.display.update()
 
 ### DEATH LOOP ###
