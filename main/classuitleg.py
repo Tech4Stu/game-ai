@@ -30,6 +30,7 @@ class Munt:
         else:
             self.kleur = (100,100,0)
     def score(self):
+        print("5")
 
 
 #een basic lus om voorbeelden op te testen

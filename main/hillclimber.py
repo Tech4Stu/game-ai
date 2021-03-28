@@ -270,6 +270,7 @@ class Car:
         self.drive = 0.08 #versnelling x
         self.jumping = True
         self.platform = False
+        self.rect = pygame.Rect(self.x,self.y,38,102)
 
     def draw(self):
         """
@@ -350,16 +351,18 @@ class Munten:
         self.rect = pygame.Rect(self.x,self.y,20,20) # 20 op 20 is formaat van de munt
         self.kleur = (100,100,0)
 
-    def tekenenMunten(self,surface):
-        #teken de munt op het scherm
-        pygame.draw.rect(surface,(255,255,255),self.rect)
-        screen.blit(munten_img, (self.x,self.y))
-
-
-
-def munttekenen(x):
-    screen.blit(munten_img, (x, 100))
-
+    def hit(self,auto):
+        #test wanneer er iets geraakt is zetten we dit op true, eigenlijk kan die functie weg.
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+            self.gepakt = True
+            return True
+        if self.rect.colliderect(auto):
+            print("genomen")
+            self.gepakt = True
+            return True
+        else:
+            return False
 
 
 ### ALGEMENE PARAMETERS ###
@@ -405,6 +408,7 @@ for segment in range(segments):
 titelhoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
 main = True
+munten = [] #een muntarray opbouwen
 
 ### GAME LOOP ###
 def game_loop():
@@ -422,6 +426,8 @@ def game_loop():
     jump = False
     jumping = False
     t = 0
+    vorigetijd = 0
+
     while running:
         #scherm resetten
         screen.fill((255,255,255))
@@ -477,6 +483,7 @@ def game_loop():
         if car.checkDeath():
             running = False
             death_loop(int(score//10))
+
         # score
         if car.mapx > score:
             score = car.mapx
@@ -485,16 +492,31 @@ def game_loop():
 
         #in start_time stoppen we enkel de seconden van de tijd
         start_time = time.strftime("%S")
+        if(int(start_time) %3 == 0 and vorigetijd!=start_time): # vorigetijd != start_time zodat we niet meerdere munten krijgen voor 1 seconde (delays tegengaan)
+            aantal = random.randint(1,5) #randomgetal voor het aantal munten in 1 keer te tekenen
+            for x in range(aantal): #voor elke munt gaan we een munt aanmaken met x en y coordinaat en toevoegen aan de lijst
+                munt = Munten((int(car.mapx) + int(time.strftime("%S")) + int(time.strftime("%M")) + (x*20)), int(lavaheight))  # instantie munt met x en y positie
+                munten.append(munt)
+        if len(munten)> 1000: #voorkomen dat de lijst te lang wordt, wanneer het langer is dan 1000 gaan we iedere keer de eerste munt wegsmijten.
+            for x in range(1000,len(munten),1):
+                del munten[0]
 
-        #munten aanspreken om de 3 seconden
-        if (int(start_time) % 3 == 0):
-            munt = Munten(int(car.mapx),int(lavaheight))
-            munt.tekenenMunten(screen)
-            #munttekenen(int(car.mapx))
+        for munt in munten: # voor elke munt in de array gaan we dit tekenen op het scherm, checken of de auto de munt raakt, zo ja verwijderen we de munt uit de lijst en doen we 5 bij de score
+            print("volgende")
+            screen.blit(munten_img,(munt.x,munt.y))
+            if(munt.hit(car.rect) == True):
+                munten.remove(munt)
+                score += 5
+                score_label.txt = f"SCORE: {int(score)}"
+                score_label.draw()
+        vorigetijd = start_time #variabele om de delay van de tijd weg te werken
         pygame.display.update()
+
 
 ### DEATH LOOP ###
 def death_loop(score):
+    #wanneer de gebruiker in lava heeft gereden, plaatsen we de munten terug op 0
+    munten.clear()
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
     s.fill((255, 0, 0))
