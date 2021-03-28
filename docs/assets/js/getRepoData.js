@@ -9,4 +9,4 @@ const octokit = new Octokit({ auth: `0459c1c341c8b7b6a9f7a79a05ab266e629cbaad` }
     repo: 'hillclimber'
   })
 })
-document.getElementById("data-test").innerHTML = commits
+console.log(commits)
