@@ -7,3 +7,5 @@ const commits = await octokit.request('GET /repos/{owner}/{repo}/commits', {
   owner: 'Tech4Stu',
   repo: 'hillclimber'
 });
+
+document.getElementById("data-test").innerHTML = commits;
