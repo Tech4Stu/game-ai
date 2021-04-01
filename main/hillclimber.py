@@ -290,7 +290,7 @@ class Car:
         new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
         new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        test = pygame.draw.rect(screen, (255,255,255), rot_player[1])  #hitbox van gedraaide foto
+        #pygame.draw.rect(screen, (255,255,255), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
@@ -441,8 +441,10 @@ def game_loop():
                     running = False
                 if event.key == K_LEFT:
                     left = True
+
                 if event.key == K_RIGHT:
                     right = True
+
                 if event.key == K_UP:
                     jump = True
             if event.type == KEYUP:
@@ -466,11 +468,17 @@ def game_loop():
                 road.remove(segment)
                 road.append(new)
                 new.draw(car.mapx)
+                if len(munten) > 0:
+                    for munt in munten:
+                        munt.x -= 10
             if segment.beginx >= WINDOW_SIZE[0]:
                 new = Roadsegment(segment.index - segments)
                 road.remove(segment)
                 new.draw(car.mapx)
                 road.append(new)
+                if len(munten) > 0:
+                    for munt in munten:
+                        munt.x += 10
         # keyinputs handelen
         if right:
             car.right()
@@ -494,15 +502,16 @@ def game_loop():
         start_time = time.strftime("%S")
         if(int(start_time) %3 == 0 and vorigetijd!=start_time): # vorigetijd != start_time zodat we niet meerdere munten krijgen voor 1 seconde (delays tegengaan)
             aantal = random.randint(1,5) #randomgetal voor het aantal munten in 1 keer te tekenen
+            print(aantal)
             for x in range(aantal): #voor elke munt gaan we een munt aanmaken met x en y coordinaat en toevoegen aan de lijst
-                munt = Munten((int(car.mapx) + int(time.strftime("%S")) + int(time.strftime("%M")) + (x*20)), int(lavaheight))  # instantie munt met x en y positie
+                yPositie = gety(car.mapx)
+                munt = Munten(1000, yPositie)  # instantie munt met x en y positie
                 munten.append(munt)
         if len(munten)> 1000: #voorkomen dat de lijst te lang wordt, wanneer het langer is dan 1000 gaan we iedere keer de eerste munt wegsmijten.
             for x in range(1000,len(munten),1):
                 del munten[0]
 
         for munt in munten: # voor elke munt in de array gaan we dit tekenen op het scherm, checken of de auto de munt raakt, zo ja verwijderen we de munt uit de lijst en doen we 5 bij de score
-            print("volgende")
             screen.blit(munten_img,(munt.x,munt.y))
             if(munt.hit(car.rect) == True):
                 munten.remove(munt)
