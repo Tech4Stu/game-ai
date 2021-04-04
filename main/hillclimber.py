@@ -1,7 +1,7 @@
 ###De indeling van de file zal zijn:   IMPORTS
+###                                    ALGEMENE PARAMETERS
 ###                                    FUNCTIES
 ###                                    CLASSEN
-###                                    ALGEMENE PARAMETERS
 ###                                    GAME LOOP
 ###                                    DEATH LOOP
 ###                                    MAIN LOOP
@@ -28,8 +28,8 @@ scale = 0.02 * segments/50
 lavaheight = 500
 
 #Cheats
-flat = 0
-devmode = 0
+flat = 0        # een flat world genereren
+devmode = 0     #het doodgaan uitschakelen
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -56,11 +56,19 @@ def drawground(road,color):
     pygame.draw.polygon(screen,color,group)
 
 def drawlava():
+    '''
+    functie om de lava te delen
+    '''
     pygame.draw.polygon(screen,lavakleur,((0,WINDOW_SIZE[1]),(0,lavaheight),(WINDOW_SIZE[0],lavaheight),(WINDOW_SIZE[0],WINDOW_SIZE[1])))
     pygame.draw.line(screen,lavakleur2,(0,lavaheight),(WINDOW_SIZE[0],lavaheight),3)
 
 #HOOGTEFUNCTIES
 def gety(x):
+    '''
+    krijg de hoogte van de road op een bepaalde x pos
+    :param x: gegeven x positie waarvan hoogte gewenst wordt
+    :return: de hoogte op pos x
+    '''
     if flat == 0:
         if x < 500:
             return 200
@@ -87,7 +95,7 @@ class Platform:
         pygame.draw.line(screen,black,(self.x-self.breedte/2-car.mapx,lavaheight),(self.x+self.breedte/2-car.mapx,lavaheight),self.width)
 
 class Roadsegment:
-    def __init__(self,index, flat=False):
+    def __init__(self,index):
         self.index = index
         self.beginy = gety((WINDOW_SIZE[0] / segments) * (self.index))
         self.endy = gety((WINDOW_SIZE[0] / segments) * (self.index+1))
@@ -98,11 +106,9 @@ class Roadsegment:
             self.color = stone
         else:
             self.color = grass
-
         self.width = 10
 
     def draw(self,mapx):
-
         self.beginx = WINDOW_SIZE[0]/segments * (self.index) - mapx
         self.endx = WINDOW_SIZE[0]/segments * (self.index + 1) - mapx
         pygame.draw.line(screen,self.color,(self.beginx,self.beginy),(self.endx,self.endy),self.width)
@@ -180,33 +186,18 @@ class Line:
         c = False
         d = False
 
-        if x1 >= x2:
-            if x2 <= x and x <= x1:
-                a = True
-        else:
-            if x1 <= x and x <= x2:
-                a = True
+        if x2 <= x <= x1 or x1 <= x <= x2:
+            a = True
 
-        if x3 >= x4:
-            if x4 <= x and x <= x3:
-                b = True
-        else:
-            if x3 <= x and x <= x4:
-                b = True
+        if x4 <= x <= x3 or x3 <= x <= x4:
+            b = True
 
-        if y1 >= y2:
-            if y2 <= y and y <= y1:
-                c = True
-        else:
-            if y1 <= y and y <= y2:
-                c = True
+        if y2 <= y <= y1 or y1 <= y <= y2:
+            c = True
 
-        if y3 >= y4:
-            if y4 <= y and y <= y3:
-                d = True
-        else:
-            if y3 <= y and y <= y4:
-                d = True
+        if y4 <= y <= y3 or y3 <= y <= y4:
+            d = True
+
         if a and b and c and d:
             pygame.draw.circle(screen, (0, 0, 255), (int(x), int(y)), 10)
             return (x,y)
@@ -256,15 +247,8 @@ class Lava:
             for i in range(number):
                 self.platforms.append(Platform((i+1)*(pool[1]-pool[0])/(number+1)+pool[0]))
 
-
         for platform in self.platforms:
             platform.draw(car)
-
-
-    def draw(self,car):
-
-        for line in self.relativepools:
-            pygame.draw.line(screen,self.color,(line[0],lavaheight),(line[1],lavaheight),self.width)
 
 class Car:
     def __init__(self, x, y, r):
@@ -276,7 +260,6 @@ class Car:
         self.y_a = 0.02  #Fz
         self.sprong = 2
         self.r = r
-
         self.color = (0,0,255)
         self.mapx = 0   #
         self.xthresh = 3 #max snelheid
@@ -293,8 +276,7 @@ class Car:
         :return: /
         """
         L = 51  # lengte van halve player rechtstaand in pixels
-        a = math.ceil(self.x_v*10)  # hoek van player (recthstaand is 0° volledig vooruit is -40°)
-
+        a = math.ceil(self.x_v*10)  # hoek van player (rechtstaand is 0° volledig vooruit is -40°)
         if a > self.xthresh*10: # voor de twitch van max en min te vermijden want snelheid kan soms net boven treshhold gaan.
             a = self.xthresh*10
         elif a < -self.xthresh*10+1:
@@ -361,7 +343,6 @@ class Car:
         if self.mapx < 0:
             self.mapx = 0
 
-#class munten
 class Munt:
     def __init__(self,x):
         self.x = x
@@ -370,7 +351,6 @@ class Munt:
             self.y = lavaheight - 80
         self.gepakt = False #weten wanneer er een munt is genomen
         self.rect = pygame.Rect(self.x,self.y,20,20) # 20 op 20 is formaat van de munt
-        self.kleur = (100,100,0)
 
     def draw(self,car):
         screen.blit(munten_img, (self.x - car.mapx, self.y))
@@ -384,6 +364,9 @@ class Munt:
             return False
 
 class Groep:
+    '''
+    een class waarin alle munten op het scherm worden getekend, met alsook een var om de punten verzameld aan de hand van munten bij te houden
+    '''
     def __init__(self):
         self.munten = []
         self.lastx = 2000
@@ -392,6 +375,7 @@ class Groep:
         self.max = 800
         self.volgende = random.randrange(self.min, self.max)
         self.punten = 0
+
     def update(self,car):
         for munt in self.munten:
             if munt.x < car.mapx:
@@ -405,11 +389,13 @@ class Groep:
                 break
 
     def checkCol(self,car):
+        '''
+        testen of player een van de munten heeft genomen
+        '''
         for munt in self.munten:
             if munt.hit(car):
                 self.punten += 200
                 self.munten.remove(munt)
-
 
 ### ALGEMENE PARAMETERS ###
 # window setup
@@ -427,7 +413,6 @@ titel_img = pygame.transform.scale(titel_img, (839, 146)) # x1.5
 player_img = pygame.image.load("images\playerV2.png").convert()
 player_img.set_colorkey((255,255,255))
 player_img = pygame.transform.scale(player_img, (38, 102))
-#foto munten
 munten_img = pygame.image.load("images/munt2.png").convert()
 munten_img.set_colorkey((255,255,255))
 munten_img = pygame.transform.scale(munten_img,(20,20))
@@ -442,7 +427,6 @@ play_button = engine.Button(screen,
                             font_size=font_size,
                             transparant=True)
 #road initialiseren
-
 noise = Perlin(1000//segments) #frequentie terrain
 road = []
 i = 0
@@ -450,10 +434,6 @@ i = 0
 for segment in range(segments):
     road.append(Roadsegment(i))
     i+=1
-# rest
-titelhoek = 0 #hoek waarrond titel wordt gedraaid
-sign = 0.25 #dhoek/dt
-main = True
 
 ### GAME LOOP ###
 def game_loop():
@@ -461,19 +441,17 @@ def game_loop():
     deze loop is het spel zelf waarnaar verwezen worden wnr op het hoofdmenu op play wordt gedrukt
     :return: /
     '''
+    #setup variabelen
     running = True
     score = 0
     score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
-    car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    car = Car(WINDOW_SIZE[0]/4, -20, 32)
     muntengroep = Groep()
     lava = Lava()
     left = False
     right = False
     jump = False
-    jumping = False
-    t = 0
-    vorigetijd = 0
-
+    #loop
     while running:
         #scherm resetten
         screen.fill(achtergrond)
@@ -487,10 +465,8 @@ def game_loop():
                     running = False
                 if event.key == K_LEFT:
                     left = True
-
                 if event.key == K_RIGHT:
                     right = True
-
                 if event.key == K_UP:
                     jump = True
             if event.type == KEYUP:
@@ -500,10 +476,9 @@ def game_loop():
                     right = False
                 if event.key == K_UP:
                     jump = False
-        # Draw terrain
+        #terrain regelen
         drawlava()
         lava.update(car)
-        #lava.draw(car)
         lava.generatePlatforms(car)
         drawground(road,ground)
         for segment in road:
@@ -514,78 +489,41 @@ def game_loop():
                 road.remove(segment)
                 road.append(new)
                 new.draw(car.mapx)
-                #if len(munten) > 0:
-                 #   for munt in munten:
-                  #      munt.xMove -= (new.endx -new.beginx)
             if segment.beginx >= WINDOW_SIZE[0]:
                 new = Roadsegment(segment.index - segments)
                 road.remove(segment)
                 new.draw(car.mapx)
                 road.append(new)
-                #if len(munten) > 0:
-                 #   for munt in munten:
-                  #      munt.xMove += (new.endx -new.beginx)
-        # keyinputs handelen
+        #munten regelen
+        muntengroep.update(car)
+        muntengroep.checkCol(car)
+        for munt in muntengroep.munten:
+            munt.draw(car)
+        #car regelen
         if right:
             car.right()
         if left:
             car.left()
         if jump:
             car.jump()
-
-        muntengroep.update(car)
-        muntengroep.checkCol(car)
-
-        for munt in muntengroep.munten:
-            munt.draw(car)
-
         car.update(lava)
         car.draw()
+        #death regelen
         if devmode == 0:
             if car.checkDeath():
                 running = False
                 death_loop(int(score//10))
-
-        # score
+        #score regelen
         if car.mapx + muntengroep.punten > score:
             score = car.mapx + muntengroep.punten
             score_label.txt = f"SCORE: {int(score//10)}"
         score_label.draw()
-        #in start_time stoppen we enkel de seconden van de tijd
-        #start_time = time.strftime("%S")
-        #if(int(start_time) %3 == 0 and vorigetijd!=start_time): # vorigetijd != start_time zodat we niet meerdere munten krijgen voor 1 seconde (delays tegengaan)
-         #   aantal = random.randint(1,5) #randomgetal voor het aantal munten in 1 keer te tekenen
-          #  print(aantal)
-           # for x in range(aantal): #voor elke munt gaan we een munt aanmaken met x en y coordinaat en toevoegen aan de lijst
-            #    yPositie = gety(1000) + 50
-             #   if yPositie >= lavaheight:
-              #      yPositie = lavaheight -10
-               # munt = Munten(1000 - car.mapx, yPositie)  # instantie munt met x en y positie
-                #munt.xMove = munt.x
-                #munten.append(munt)
-        '''if len(munten)> 1000: #voorkomen dat de lijst te lang wordt, wanneer het langer is dan 1000 gaan we iedere keer de eerste munt wegsmijten.
-            for x in range(1000,len(munten),1):
-                del munten[0]
-
-        for munt in munten: # voor elke munt in de array gaan we dit tekenen op het scherm, checken of de auto de munt raakt, zo ja verwijderen we de munt uit de lijst en doen we 5 bij de score
-            muntRect = pygame.Rect(munt.xMove, munt.y, 20, 20) #dynamisch een rect maken zodat de x-waarden veranderen
-            carRect = pygame.Rect(car.x,car.y,38, 102)
-            munt.x = 1000 - car.mapx
-            pygame.draw.rect(screen, (255, 255, 15), muntRect)
-            if(munt.hit(car.player,muntRect) == True):
-                munten.remove(munt)
-                score += 5
-            else:
-                screen.blit(munten_img, (munt.xMove, munt.y))
-
-        vorigetijd = start_time #variabele om de delay van de tijd weg te werken
-        '''
+        #scherm updaten
         pygame.display.update()
-
 
 ### DEATH LOOP ###
 def death_loop(score):
-    #wanneer de gebruiker in lava heeft gereden, plaatsen we de munten terug op 0
+    #setup variabelen
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
     s.fill((255, 0, 0))
@@ -606,9 +544,9 @@ def death_loop(score):
                                side = "center",
                                font_size=font_size,
                                txt_clr=(255,255,255))
-    #print(score_label.side)
     running = True
     i = 0
+    #loop
     while running:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -636,6 +574,9 @@ def death_loop(score):
         pygame.display.update()
 
 ### MAIN LOOP ###
+titelhoek = 0 #hoek waarrond titel wordt gedraaid
+sign = 0.25 #dhoek/dt
+main = True
 while main:
     screen.fill((69,69,69))
     for event in pygame.event.get():

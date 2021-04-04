@@ -35,10 +35,8 @@ class Label:
         if not self.height:
             self.height = self.font.size(self.txt)[1]
         self.rect       = pygame.Rect(self.pos[0], self.pos[1], self.width, self.height)
-        print(self.rect)
         if self.side == "center":
             self.rect.centerx = self.pos[0]
-        print(self.rect)
         if self.side == 'right':
             self.rect.right = self.pos[0]+self.rect.width
 
