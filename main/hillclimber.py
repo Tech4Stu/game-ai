@@ -19,12 +19,17 @@ white = (255,255,255)
 red = (255,0,0)
 ground = (135, 86, 16)
 lavakleur = (255,100,0)
-lavakleur2 = (184, 23, 6)
+lavakleur2 = (150, 50, 0)
+achtergrond = (50,200,240)
 grass = (104, 184, 24)
 stone = (130, 126, 121)
 segments = 100
 scale = 0.02 * segments/50
 lavaheight = 500
+
+#Cheats
+flat = 0
+devmode = 0
 
 ### FUNCTIES ###
 def rot_center(image, angle, x, y):
@@ -52,13 +57,17 @@ def drawground(road,color):
 
 def drawlava():
     pygame.draw.polygon(screen,lavakleur,((0,WINDOW_SIZE[1]),(0,lavaheight),(WINDOW_SIZE[0],lavaheight),(WINDOW_SIZE[0],WINDOW_SIZE[1])))
+    pygame.draw.line(screen,lavakleur2,(0,lavaheight),(WINDOW_SIZE[0],lavaheight),3)
 
 #HOOGTEFUNCTIES
 def gety(x):
-    if x < 500:
-        return WINDOW_SIZE[1] * 2 / 3 + noise.valueAt(scale * x + 100) * WINDOW_SIZE[1] / 3 - (500 * (1 - x/500))
-    else:
-        return WINDOW_SIZE[1] * 2 / 3 + noise.valueAt(scale * x + 100) * WINDOW_SIZE[1] / 3
+    if flat == 0:
+        if x < 500:
+            return 200
+        else:
+            return WINDOW_SIZE[1] * 2 / 3 + noise.valueAt(scale * x + 100) * WINDOW_SIZE[1] / 3
+    if flat == 1:
+        return 300
 
 def getnormal(x):
     y0 = gety(x)
@@ -237,7 +246,6 @@ class Lava:
             self.relativepools.append((pool[0] - car.mapx, pool[1] - car.mapx))
 
         self.poolthresh = int(car.mapx / self.difframp  + 300)
-        print(self.poolthresh)
 
 
     def generatePlatforms(self,car):
@@ -268,7 +276,7 @@ class Car:
         self.y_a = 0.02  #Fz
         self.sprong = 2
         self.r = r
-        self.player = 0
+
         self.color = (0,0,255)
         self.mapx = 0   #
         self.xthresh = 3 #max snelheid
@@ -276,6 +284,7 @@ class Car:
         self.jumping = True
         self.platform = False
         self.rect = pygame.Rect(self.x,self.y,38,102)
+        self.player = self.rect
 
     def draw(self):
         """
@@ -297,7 +306,7 @@ class Car:
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
         #self.player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
         self.player = pygame.Rect(rot_player[1])
-        pygame.draw.rect(screen, (255,1,255), rot_player[1])  #hitbox van gedraaide foto
+        #pygame.draw.rect(screen, (255,1,255), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
@@ -357,7 +366,7 @@ class Munt:
     def __init__(self,x):
         self.x = x
         self.y = gety(self.x) - 50
-        if self.y > lavaheight:
+        if gety(self.x) > lavaheight:
             self.y = lavaheight - 80
         self.gepakt = False #weten wanneer er een munt is genomen
         self.rect = pygame.Rect(self.x,self.y,20,20) # 20 op 20 is formaat van de munt
@@ -366,20 +375,40 @@ class Munt:
     def draw(self,car):
         screen.blit(munten_img, (self.x - car.mapx, self.y))
 
-
-    def hit(self,auto,munt):
-        #test wanneer er iets geraakt is zetten we dit op true, eigenlijk kan die functie weg.
-        mouse_pos = pygame.mouse.get_pos()
-        if munt.collidepoint(mouse_pos[0], mouse_pos[1]):
-            print("met de muis...............")
-            self.gepakt = True
-            return True
-        if munt.colliderect(auto):
-            print("genomen")
+    def hit(self,car):
+        self.rect.x = self.x - car.mapx
+        if self.rect.colliderect(car.player):
             self.gepakt = True
             return True
         else:
             return False
+
+class Groep:
+    def __init__(self):
+        self.munten = []
+        self.lastx = 2000
+        self.munten.append(Munt(self.lastx))
+        self.min = 200
+        self.max = 800
+        self.volgende = random.randrange(self.min, self.max)
+        self.punten = 0
+    def update(self,car):
+        for munt in self.munten:
+            if munt.x < car.mapx:
+                self.munten.remove(munt)
+        while 1:
+            if self.lastx + self.volgende < WINDOW_SIZE[0] + car.mapx:
+                self.munten.append(Munt(self.lastx + self.volgende))
+                self.lastx += self.volgende
+                self.volgende = random.randrange(self.min, self.max)
+            else:
+                break
+
+    def checkCol(self,car):
+        for munt in self.munten:
+            if munt.hit(car):
+                self.punten += 200
+                self.munten.remove(munt)
 
 
 ### ALGEMENE PARAMETERS ###
@@ -425,7 +454,6 @@ for segment in range(segments):
 titelhoek = 0 #hoek waarrond titel wordt gedraaid
 sign = 0.25 #dhoek/dt
 main = True
-munten = [] #een muntarray opbouwen
 
 ### GAME LOOP ###
 def game_loop():
@@ -437,10 +465,7 @@ def game_loop():
     score = 0
     score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
     car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
-    munt = Munt(500)
-    munten = []
-    munten.append(munt)
-    
+    muntengroep = Groep()
     lava = Lava()
     left = False
     right = False
@@ -451,7 +476,7 @@ def game_loop():
 
     while running:
         #scherm resetten
-        screen.fill((255,255,255))
+        screen.fill(achtergrond)
         #events handelen
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -478,7 +503,7 @@ def game_loop():
         # Draw terrain
         drawlava()
         lava.update(car)
-        lava.draw(car)
+        #lava.draw(car)
         lava.generatePlatforms(car)
         drawground(road,ground)
         for segment in road:
@@ -507,17 +532,24 @@ def game_loop():
             car.left()
         if jump:
             car.jump()
-        munt.draw(car)
+
+        muntengroep.update(car)
+        muntengroep.checkCol(car)
+
+        for munt in muntengroep.munten:
+            munt.draw(car)
+
         car.update(lava)
         car.draw()
-        if car.checkDeath():
-            running = False
-            death_loop(int(score//10))
+        if devmode == 0:
+            if car.checkDeath():
+                running = False
+                death_loop(int(score//10))
 
         # score
-        if car.mapx > score:
-            score = car.mapx
-            score_label.txt = f"SCORE: {int(score // 10)}"
+        if car.mapx + muntengroep.punten > score:
+            score = car.mapx + muntengroep.punten
+            score_label.txt = f"SCORE: {int(score//10)}"
         score_label.draw()
         #in start_time stoppen we enkel de seconden van de tijd
         #start_time = time.strftime("%S")
@@ -554,7 +586,6 @@ def game_loop():
 ### DEATH LOOP ###
 def death_loop(score):
     #wanneer de gebruiker in lava heeft gereden, plaatsen we de munten terug op 0
-    munten.clear()
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
     s.fill((255, 0, 0))
@@ -575,7 +606,7 @@ def death_loop(score):
                                side = "center",
                                font_size=font_size,
                                txt_clr=(255,255,255))
-    print(score_label.side)
+    #print(score_label.side)
     running = True
     i = 0
     while running:
