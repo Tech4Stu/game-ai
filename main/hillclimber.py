@@ -28,7 +28,7 @@ scale = 0.02 * segments/50
 lavaheight = 500
 
 #Cheats
-flat = 0        # een flat world genereren
+flat = 0       # een flat world genereren
 devmode = 0     #het doodgaan uitschakelen
 
 ### FUNCTIES ###
@@ -375,6 +375,7 @@ class Groep:
         self.max = 800
         self.volgende = random.randrange(self.min, self.max)
         self.punten = 0
+        self.ppm = 200      # points per munt
 
     def update(self,car):
         for munt in self.munten:
@@ -394,7 +395,7 @@ class Groep:
         '''
         for munt in self.munten:
             if munt.hit(car):
-                self.punten += 200
+                self.punten += self.ppm
                 self.munten.remove(munt)
 
 ### ALGEMENE PARAMETERS ###
@@ -444,7 +445,9 @@ def game_loop():
     #setup variabelen
     running = True
     score = 0
-    score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
+    #score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
+    distance_label = engine.Label(screen, (40, 20), "DISTANCE: 0m", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
+    munten_label = engine.Label(screen, (75, 20 + distance_label.height), ": 0", txt_clr=(0, 0, 0), transparant=True, side="left", txt_side="left")
     car = Car(WINDOW_SIZE[0]/4, -20, 32)
     muntengroep = Groep()
     lava = Lava()
@@ -512,17 +515,20 @@ def game_loop():
         if devmode == 0:
             if car.checkDeath():
                 running = False
-                death_loop(int(score//10))
+                death_loop(int(car.mapx//10), muntengroep.punten//muntengroep.ppm, muntengroep.ppm)
         #score regelen
         if car.mapx + muntengroep.punten > score:
             score = car.mapx + muntengroep.punten
-            score_label.txt = f"SCORE: {int(score//10)}"
-        score_label.draw()
+            distance_label.txt = f"DISTANCE: {int(car.mapx//10)}m"
+            munten_label.txt = f": {muntengroep.punten//muntengroep.ppm}"
+        distance_label.draw()
+        munten_label.draw()
+        screen.blit(pygame.transform.scale(munten_img, (30, 30)), (40, 20 + distance_label.height + (munten_label.height - munten_img.get_height()) / 2 - 5))
         #scherm updaten
         pygame.display.update()
 
 ### DEATH LOOP ###
-def death_loop(score):
+def death_loop(dist, munten, ppm):
     #setup variabelen
     s = pygame.Surface((WINDOW_SIZE[0],WINDOW_SIZE[1]))
     s.set_alpha(3)
@@ -534,16 +540,26 @@ def death_loop(score):
                                 "HOME",
                                 width=WINDOW_SIZE[0] // 5,
                                 font_size=font_size)
-    restart_button = engine.Button(screen, (WINDOW_SIZE[0]/2-WINDOW_SIZE[0]//6, WINDOW_SIZE[1]/2),
+    restart_button = engine.Button(screen, (WINDOW_SIZE[0]/2-WINDOW_SIZE[0]//6, WINDOW_SIZE[1]/4*3),
                                "RESTART",
                                width=WINDOW_SIZE[0] // 3,
                                font_size=font_size,
                                txt_clr = (255,255,255))
-    score_label = engine.Label(screen, (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 - restart_button.height),
-                               f"SCORE: {score}",
-                               side = "center",
+    distance_label = engine.Label(screen, (WINDOW_SIZE[0]//2-220, WINDOW_SIZE[1]/4*3 - restart_button.height*3.5),
+                               f"DISTANCE: {dist}m",
+                               side = "left",
                                font_size=font_size,
                                txt_clr=(255,255,255))
+    munten_label = engine.Label(screen, (WINDOW_SIZE[0]//2-200+pygame.transform.scale(munten_img, (50, 50)).get_width(), WINDOW_SIZE[1] /4*3 - restart_button.height*2.5),
+                               f": {munten} X {ppm}",
+                               side="left",
+                               font_size=font_size,
+                               txt_clr=(255, 255, 255))
+    score_label = engine.Label(screen, (WINDOW_SIZE[0]//2-220, WINDOW_SIZE[1] /4*3 - restart_button.height*1.5),
+                               f"SCORE: {dist+munten*ppm}",
+                               side="left",
+                               font_size=font_size,
+                               txt_clr=(255, 255, 255))
     running = True
     i = 0
     #loop
@@ -567,6 +583,9 @@ def death_loop(score):
             i += 1
         else:
             screen.blit(z, (0,0))
+            distance_label.draw()
+            munten_label.draw()
+            screen.blit(pygame.transform.scale(munten_img, (50,50)), (WINDOW_SIZE[0]//2-220, WINDOW_SIZE[1] /4*3 - restart_button.height*2.5+(munten_label.height-50)/2))
             score_label.draw()
             esc_button.draw()
             restart_button.draw()

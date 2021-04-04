@@ -46,11 +46,11 @@ class Label:
         if pos == None:
             pos = (self.rect[0], self.rect[1])
         if not self.transparant:
-            pygame.draw.rect(surf, self.bg_clr, (pos[0], pos[1], self.rect.width, self.rect.height))
+            pygame.draw.rect(surf, self.bg_clr, self.rect)
         if self.border:
-            pygame.draw.rect(surf, self.border_clr, (pos[0], pos[1], self.rect.width, self.rect.height), 2)
+            pygame.draw.rect(surf, self.border_clr, self.rect, 2)
         if not self.picture:
-            text_on_button(surf, self.txt, pygame.Rect(pos[0], pos[1], self.rect.width, self.rect.height), self.font, self.txt_clr, side=self.txt_side)
+            text_on_button(surf, self.txt, self.rect, self.font, self.txt_clr, side=self.txt_side)
         else:
             self.picture = pygame.transform.scale(self.picture, (32, 32))
             surf.blit(self.picture, (
