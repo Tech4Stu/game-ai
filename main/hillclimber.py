@@ -291,8 +291,9 @@ class Car:
         new_x = L*sin(math.radians(a))  # de x pos nodig voor verschuiving van wiel tov rotatie te compenseren
         new_y = new_x*tan(math.radians(c))  # de y pos nodig voor verschuiving van wiel tov rotatie te compenseren
         rot_player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        self.player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
-        #pygame.draw.rect(screen, (255,200,255), rot_player[1])  #hitbox van gedraaide foto
+        #self.player = rot_center(player_img, -a, self.x+new_x, self.y+new_y-L)
+        self.player = pygame.Rect(rot_player[1])
+        pygame.draw.rect(screen, (255,1,255), rot_player[1])  #hitbox van gedraaide foto
         screen.blit(rot_player[0], rot_player[1])
     def left(self):
         if self.x_v > -self.xthresh:
@@ -345,14 +346,19 @@ class Car:
 
 
 #class munten
-class Munten:
-    def __init__(self,x,y):
+class Munt:
+    def __init__(self,x):
         self.x = x
-        self.y = y
-        self.xMove = x
+        self.y = gety(self.x) - 50
+        if self.y > lavaheight:
+            self.y = lavaheight - 80
         self.gepakt = False #weten wanneer er een munt is genomen
-        self.rect = pygame.Rect(self.xMove,self.y,20,20) # 20 op 20 is formaat van de munt
+        self.rect = pygame.Rect(self.x,self.y,20,20) # 20 op 20 is formaat van de munt
         self.kleur = (100,100,0)
+
+    def draw(self,car):
+        screen.blit(munten_img, (self.x - car.mapx, self.y))
+
 
     def hit(self,auto,munt):
         #test wanneer er iets geraakt is zetten we dit op true, eigenlijk kan die functie weg.
@@ -424,6 +430,10 @@ def game_loop():
     score = 0
     score_label = engine.Label(screen, (40, 20), "SCORE: 0", txt_clr = (0,0,0), transparant=True, side="left", txt_side="left")
     car = Car(WINDOW_SIZE[0]/4, -20, 32) #gwn nog zodat game menu werkt, moet nog veranderd worden
+    munt = Munt(500)
+    munten = []
+    munten.append(munt)
+    
     lava = Lava()
     left = False
     right = False
@@ -472,17 +482,17 @@ def game_loop():
                 road.remove(segment)
                 road.append(new)
                 new.draw(car.mapx)
-                if len(munten) > 0:
-                    for munt in munten:
-                        munt.xMove -= (new.endx -new.beginx)
+                #if len(munten) > 0:
+                 #   for munt in munten:
+                  #      munt.xMove -= (new.endx -new.beginx)
             if segment.beginx >= WINDOW_SIZE[0]:
                 new = Roadsegment(segment.index - segments)
                 road.remove(segment)
                 new.draw(car.mapx)
                 road.append(new)
-                if len(munten) > 0:
-                    for munt in munten:
-                        munt.xMove += (new.endx -new.beginx)
+                #if len(munten) > 0:
+                 #   for munt in munten:
+                  #      munt.xMove += (new.endx -new.beginx)
         # keyinputs handelen
         if right:
             car.right()
@@ -490,6 +500,7 @@ def game_loop():
             car.left()
         if jump:
             car.jump()
+        munt.draw(car)
         car.update(lava)
         car.draw()
         if car.checkDeath():
@@ -501,34 +512,35 @@ def game_loop():
             score = car.mapx
             score_label.txt = f"SCORE: {int(score // 10)}"
         score_label.draw()
-
         #in start_time stoppen we enkel de seconden van de tijd
-        start_time = time.strftime("%S")
-        if(int(start_time) %3 == 0 and vorigetijd!=start_time): # vorigetijd != start_time zodat we niet meerdere munten krijgen voor 1 seconde (delays tegengaan)
-            aantal = random.randint(1,5) #randomgetal voor het aantal munten in 1 keer te tekenen
-            print(aantal)
-            for x in range(aantal): #voor elke munt gaan we een munt aanmaken met x en y coordinaat en toevoegen aan de lijst
-                yPositie = gety(1000)
-                munt = Munten(1000, yPositie)  # instantie munt met x en y positie
-                munt.xMove = munt.x
-                munten.append(munt)
-        if len(munten)> 1000: #voorkomen dat de lijst te lang wordt, wanneer het langer is dan 1000 gaan we iedere keer de eerste munt wegsmijten.
+        #start_time = time.strftime("%S")
+        #if(int(start_time) %3 == 0 and vorigetijd!=start_time): # vorigetijd != start_time zodat we niet meerdere munten krijgen voor 1 seconde (delays tegengaan)
+         #   aantal = random.randint(1,5) #randomgetal voor het aantal munten in 1 keer te tekenen
+          #  print(aantal)
+           # for x in range(aantal): #voor elke munt gaan we een munt aanmaken met x en y coordinaat en toevoegen aan de lijst
+            #    yPositie = gety(1000) + 50
+             #   if yPositie >= lavaheight:
+              #      yPositie = lavaheight -10
+               # munt = Munten(1000 - car.mapx, yPositie)  # instantie munt met x en y positie
+                #munt.xMove = munt.x
+                #munten.append(munt)
+        '''if len(munten)> 1000: #voorkomen dat de lijst te lang wordt, wanneer het langer is dan 1000 gaan we iedere keer de eerste munt wegsmijten.
             for x in range(1000,len(munten),1):
                 del munten[0]
 
         for munt in munten: # voor elke munt in de array gaan we dit tekenen op het scherm, checken of de auto de munt raakt, zo ja verwijderen we de munt uit de lijst en doen we 5 bij de score
             muntRect = pygame.Rect(munt.xMove, munt.y, 20, 20) #dynamisch een rect maken zodat de x-waarden veranderen
             carRect = pygame.Rect(car.x,car.y,38, 102)
-            pygame.draw.rect(screen, (255, 100, 255), muntRect)
-            if(munt.hit(carRect,muntRect) == True):
+            munt.x = 1000 - car.mapx
+            pygame.draw.rect(screen, (255, 255, 15), muntRect)
+            if(munt.hit(car.player,muntRect) == True):
                 munten.remove(munt)
                 score += 5
-                score_label.txt = f"SCORE: {int(score)}"
-                score_label.draw()
             else:
                 screen.blit(munten_img, (munt.xMove, munt.y))
 
         vorigetijd = start_time #variabele om de delay van de tijd weg te werken
+        '''
         pygame.display.update()
 
 
