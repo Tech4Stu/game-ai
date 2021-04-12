@@ -8,6 +8,6 @@ const octokit = new Octokit({auth: "0459c1c341c8b7b6a9f7a79a05ab266e629cbaad"});
     owner: 'Tech4Stu',
     repo: 'hillclimber'
   });
+  console.log("Async is working");
   console.log(commits);
-  document.getElementById(data-test).value = commits;
 });
