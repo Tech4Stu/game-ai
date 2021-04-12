@@ -8,11 +8,11 @@ const auth = await octokit.request("/user");
 (async () => {
   const commits = await octokit.rest.commits.get({
   owner: "Tech4Stu",
-  repo: "hillclimber"",
+  repo: "hillclimber",
   mediaType: {
     format: "patch",
   },
 });
-  console.log("Async is working");
-  console.log(commits);
 });
+console.log("Async is working");
+console.log(commits);
