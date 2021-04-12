@@ -1,7 +1,6 @@
 import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
 
-// Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
-const octokit = new Octokit({auth: "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"});
+const octokit = new Octokit({auth: "f6d70d34445424b440bb17ca322215b7db9f6a26"});
 
 async function getCommits() {
   console.log("Async started");
