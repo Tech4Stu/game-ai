@@ -4,12 +4,9 @@ import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
 const octokit = new Octokit({auth: "0459c1c341c8b7b6a9f7a79a05ab266e629cbaad"});
 
 (async () => {
-  const commits = await octokit.rest.commits.get({
+  const commits = await octokit.rest.repos.listCommits({
     owner: "Tech4Stu",
     repo: "hillclimber",
-    mediaType: {
-      format: "patch",
-    },
   });
   console.log("Async is working");
   console.log(commits);
