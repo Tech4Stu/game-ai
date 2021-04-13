@@ -5,6 +5,7 @@ const TOKEN = "f6d70d34445424b440bb17ca322215b7db9f6a26";
 console.log(typeof TOKEN);
 
 async function getCommits() {
+  console.log(typeof TOKEN);
   const auth = createTokenAuth(TOKEN);
   const authentication = await auth();
   const octokit = new Octokit({auth: authentication});
