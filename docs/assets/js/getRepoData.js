@@ -20,5 +20,4 @@ async function getCommits(var_authentication) {
   return commits
 }
 
-authenticated = authenticate();
-console.log(getCommits(authenticated));
+console.log(getCommits(authenticate()));
