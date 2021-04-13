@@ -4,7 +4,7 @@ import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
 async function authenticate(){
   const TOKEN = "f6d70d34445424b440bb17ca322215b7db9f6a26";
   const auth = createTokenAuth(TOKEN);
-  const authentication = await auth();
+  //const authentication = await auth();
   return authentication
 }
 
