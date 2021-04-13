@@ -2,12 +2,13 @@ import { createTokenAuth } from "https://cdn.skypack.dev/@octokit/auth-token";
 import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
 
 const TOKEN = "f6d70d34445424b440bb17ca322215b7db9f6a26";
-console.log(typeof TOKEN);
 
-async function getCommits() {
-  console.log(typeof TOKEN);
+async function authorize(){
   const auth = createTokenAuth(TOKEN);
   const authentication = await auth();
+}
+
+async function getCommits() {
   const octokit = new Octokit({auth: authentication});
 
   console.log("Async started");
@@ -19,4 +20,5 @@ async function getCommits() {
   return commits
 }
 
+authorize();
 console.log(getCommits());
