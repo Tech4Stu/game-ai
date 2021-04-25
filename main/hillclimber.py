@@ -236,7 +236,7 @@ class Lava:
         for pool in self.pools:
             self.relativepools.append((pool[0] - car.mapx, pool[1] - car.mapx))
 
-        self.poolthresh = int(car.mapx / self.difframp  + 300)
+        self.poolthresh = min(int(car.mapx / self.difframp  + 300),550)
 
 
     def generatePlatforms(self,car):
